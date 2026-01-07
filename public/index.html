@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Club Deportivo el Tejar - Reservas de Pistas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h1>Club Deportivo el Tejar - Reservas de Pistas</h1>
+
+<!-- LOGIN -->
+<div id="login">
+  <h3>Acceso</h3>
+  <input type="email" id="emailInput" placeholder="tu@email.com">
+  <button id="btnAcceder">Acceder</button>
+  <p id="loginError" style="display:none; color:red;">Correo no autorizado</p>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+
+  <!-- Fechas -->
+  <div id="selectorFechas" class="fechas"></div>
+
+  <!-- Pista -->
+  <div class="selector-pista">
+    <button class="pista-btn active" data-pista="A">🎾 Tenis</button>
+    <button class="pista-btn" data-pista="B">🏓 Pádel</button>
+  </div>
+
+  <!-- Duración -->
+  <div class="selector-duracion">
+    <span>Duración:</span>
+    <button class="duracion-btn active" data-duracion="60">60 min</button>
+    <button class="duracion-btn" data-duracion="90">90 min</button>
+  </div>
+
+  <!-- Horarios -->
+  <div id="calendario"></div>
+
+  <!-- Mis reservas -->
+  <div id="listaReservas">
+    <h3>Mis reservas</h3>
+    <ul id="reservasUl"></ul>
+  </div>
+
+  <!-- PANEL DE GESTIÓN DE SOCIOS (solo admin) -->
+  <div id="panelSocios" style="display:none; margin-top:20px;">
+  <h3>Gestión de Socios</h3>
+  <ul id="listaSocios"></ul>
+  <input type="email" id="nuevoSocioInput" placeholder="nuevo@socio.com">
+  <button id="btnAgregarSocio">Agregar Socio</button>
+  </div>
+
+  <!-- Botones -->
+  <button id="confirmarReserva" disabled>Confirmar reserva</button>
+  <button id="cerrarSesion">Cerrar sesión</button>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

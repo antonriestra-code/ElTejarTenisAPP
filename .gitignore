@@ -1,0 +1,9 @@
+# Node modules
+node_modules/
+
+# Datos temporales o de configuración local
+*.log
+
+# Archivos generados
+public/app.min.js
+
