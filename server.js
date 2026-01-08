@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = 3100;
+const PORT = process.env.PORT || 3100;
 
 // Middleware
 app.use(express.json());
@@ -52,5 +52,5 @@ app.delete("/api/reservas/:id", (req, res) => {
 
 // Arranque
 app.listen(PORT, () => {
-  console.log(`🚀 SERVER NUEVO EN http://localhost:${PORT}`);
+  console.log(`Servidor escuchando en puerto ${PORT}`);
 });
