@@ -1,14 +1,5 @@
 [
   {
-    "email": "admin@eltejar.com",
-    "fecha": "2026-01-09",
-    "pistaId": "A",
-    "bloques": [
-      "10:30",
-      "11:00"
-    ]
-  },
-  {
     "email": "carlos@gmail.com",
     "fecha": "2026-01-12",
     "pistaId": "A",
@@ -70,6 +61,25 @@
     "bloques": [
       "11:30",
       "12:00"
+    ]
+  },
+  {
+    "email": "carlos@gmail.com",
+    "fecha": "2026-01-19",
+    "pistaId": "B",
+    "bloques": [
+      "11:00",
+      "11:30",
+      "12:00"
+    ]
+  },
+  {
+    "email": "marta@gmail.com",
+    "fecha": "2026-01-24",
+    "pistaId": "B",
+    "bloques": [
+      "09:00",
+      "09:30"
     ]
   }
 ]
