@@ -2,35 +2,57 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Club Deportivo El Tejar</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Club Deportivo el Tejar</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<h1>Club Deportivo El Tejar</h1>
+<h1>Reservas Club Deportivo El Tejar</h1>
 
-<!-- LOGIN -->
+<!-- LOGIN USUARIO -->
 <div id="login">
-  <h3>Acceso</h3>
-  <input type="email" id="emailInput" placeholder="email@socio.com">
-  <input type="password" id="passwordInput" placeholder="Contraseña (solo admin)">
+  <input id="emailInput" type="email" placeholder="tu@email.com">
   <button id="btnAcceder">Acceder</button>
-  <p id="loginError" style="display:none; color:red;">Acceso no autorizado</p>
+  <p id="loginError" style="display:none;color:red">No autorizado</p>
 </div>
 
 <!-- APP -->
-<div id="app" style="display:none;">
+<div id="app" style="display:none">
 
-  <!-- PANEL SOCIOS -->
-  <div id="panelSocios" style="display:none;">
-    <h3>Gestión de Socios (Admin)</h3>
-    <ul id="listaSocios"></ul>
-    <input type="email" id="nuevoSocioInput" placeholder="nuevo@socio.com">
-    <button id="btnAgregarSocio">Agregar socio</button>
+  <div id="selectorFechas"></div>
+
+  <div>
+    <button class="pista-btn active" data-pista="A">Tenis</button>
+    <button class="pista-btn" data-pista="B">Pádel</button>
   </div>
 
+  <div>
+    <button class="duracion-btn active" data-duracion="60">60 min</button>
+    <button class="duracion-btn" data-duracion="90">90 min</button>
+  </div>
+
+  <div id="calendario"></div>
+
+  <button id="confirmarReserva" disabled>Confirmar</button>
+
+  <h3>Mis reservas</h3>
+  <ul id="reservasUl"></ul>
+
+
+
+  <!-- PANEL SOCIOS -->
+  <div id="panelSocios" style="display:none">
+    <h3>Gestión de socios</h3>
+    <ul id="listaSocios"></ul>
+     <input id="nuevoSocio" placeholder="email del socio">
+  <button id="agregarSocio">Agregar</button>
+
+  <hr>
+
+  <button id="descargarCSV">📥 Descargar reservas (CSV)</button>
 </div>
+
+<button id="cerrarSesion">🚪 Cerrar sesión</button>
 
 <script src="app.js"></script>
 </body>

@@ -1,0 +1,75 @@
+[
+  {
+    "email": "admin@eltejar.com",
+    "fecha": "2026-01-09",
+    "pistaId": "A",
+    "bloques": [
+      "10:30",
+      "11:00"
+    ]
+  },
+  {
+    "email": "carlos@gmail.com",
+    "fecha": "2026-01-12",
+    "pistaId": "A",
+    "bloques": [
+      "12:30",
+      "13:00",
+      "13:30"
+    ]
+  },
+  {
+    "email": "carlos@gmail.com",
+    "fecha": "2026-01-16",
+    "pistaId": "A",
+    "bloques": [
+      "20:00",
+      "20:30"
+    ]
+  },
+  {
+    "email": "carlos@gmail.com",
+    "fecha": "2026-01-12",
+    "pistaId": "A",
+    "bloques": [
+      "10:00",
+      "10:30"
+    ]
+  },
+  {
+    "email": "carlos@gmail.com",
+    "fecha": "2026-01-12",
+    "pistaId": "A",
+    "bloques": [
+      "18:00",
+      "18:30"
+    ]
+  },
+  {
+    "email": "admin@eltejar.com",
+    "fecha": "2026-01-15",
+    "pistaId": "A",
+    "bloques": [
+      "11:00",
+      "11:30"
+    ]
+  },
+  {
+    "email": "admin@eltejar.com",
+    "fecha": "2026-01-13",
+    "pistaId": "B",
+    "bloques": [
+      "11:30",
+      "12:00"
+    ]
+  },
+  {
+    "email": "carlos@gmail.com",
+    "fecha": "2026-01-18",
+    "pistaId": "B",
+    "bloques": [
+      "11:30",
+      "12:00"
+    ]
+  }
+]

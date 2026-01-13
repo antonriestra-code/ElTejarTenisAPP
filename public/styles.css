@@ -19,32 +19,40 @@ button:disabled {
 
 #selectorFechas {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
-.fecha-btn {
-  width: 80px;
+#selectorFechas button {
+  width: 70px;
   height: 80px;
-  border-radius: 50%;
-  text-align: center;
-  font-size: 0.8em;
-  line-height: 1.2;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  background: #f0f0f0;
-  border: 1px solid #ccc;
-  transition: all 0.2s;
+  justify-content: center;
 }
 
-.fecha-btn.active {
-  background-color: #4CAF50;
+#selectorFechas button.active {
+  background: #1e90ff;
   color: white;
+}
+
+.dia-semana {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.dia-numero {
+  font-size: 22px;
   font-weight: bold;
-  border-color: #4CAF50;
+}
+
+.mes {
+  font-size: 12px;
 }
 
 /* ===== PISTAS Y DURACIÓN ===== */

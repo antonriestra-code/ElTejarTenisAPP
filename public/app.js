@@ -1,26 +1,192 @@
-/********************************************************
- * ESTADO GLOBAL
- ********************************************************/
+/* =========================
+   CONFIGURACIÓN
+========================= */
+
+const ADMIN_EMAIL = "admin@eltejar.com";
+const ADMIN_PASSWORD = "1234";
+
+const LIMITE_RESERVAS = 5;
+const DIAS_LIMITE = 14;
+
+const APERTURA = 9;
+const CIERRE = 22;
+const INTERVALO = 30;
+
+/* =========================
+   ESTADO GLOBAL
+========================= */
 
 let emailUsuario = null;
-let rolUsuario = null; // "admin" | "socio"
+let socios = [];
+let reservas = [];
 
 let fechaSeleccionada = null;
 let horaSeleccionada = null;
 
-let reservas = [];
-let socios = [];
+/* =========================
+   HELPERS FECHA / HORA
+========================= */
 
-const LIMITE_RESERVAS = 5;
-const DIAS_VENTANA = 14;
-
-/********************************************************
- * HELPERS
- ********************************************************/
-
-function $(id) {
-  return document.getElementById(id);
+function hoyISO() {
+  return new Date().toISOString().split("T")[0];
 }
+
+function sumarMinutos(hora, minutos) {
+  const [h, m] = hora.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h, m + minutos, 0, 0);
+  return d.toTimeString().slice(0, 5);
+}
+
+function reservaEstaEnElPasado(reserva) {
+  const hoy = new Date();
+
+  const inicio = reserva.bloques[0];
+  const fin = sumarMinutos(
+    reserva.bloques[reserva.bloques.length - 1],
+    30
+  );
+
+  const fechaHoraFin = new Date(`${reserva.fecha}T${fin}:00`);
+
+  return fechaHoraFin <= hoy;
+}
+
+function bloquesDesdeHora(hora, duracion) {
+  const bloques = [];
+  let actual = hora;
+  for (let i = 0; i < duracion; i += 30) {
+    bloques.push(actual);
+    actual = sumarMinutos(actual, 30);
+  }
+  return bloques;
+}
+
+function formatearFechaBonita(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+
+  // Crear fecha en horario local (NO UTC)
+  const fecha = new Date(y, m - 1, d);
+
+  const dias = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+  return {
+    diaSemana: dias[fecha.getDay()],
+    dia: fecha.getDate(),
+    mes: meses[fecha.getMonth()]
+  };
+}
+
+/* =========================
+   API
+========================= */
+
+async function cargarSocios() {
+  const r = await fetch("/api/socios");
+  socios = (await r.json()).map(s => s.toLowerCase().trim());
+}
+
+async function cargarReservas() {
+  const r = await fetch("/api/reservas");
+  reservas = await r.json();
+}
+
+async function guardarReserva(reserva) {
+  await fetch("/api/reservas", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(reserva)
+  });
+}
+
+async function borrarReserva(id) {
+  await fetch(`/api/reservas/${id}`, { method: "DELETE" });
+}
+
+/* =========================
+   LOGIN
+========================= */
+
+document.getElementById("btnAcceder").onclick = async () => {
+  const email = document.getElementById("emailInput").value.trim().toLowerCase();
+
+  await cargarSocios();
+  await cargarReservas();
+
+  if (email === ADMIN_EMAIL) {
+    const password = prompt("Contraseña (solo admin)");
+    if (password !== ADMIN_PASSWORD) {
+      alert("Contraseña incorrecta");
+      return;
+    }
+    emailUsuario = email;
+    iniciarApp(true);
+    return;
+  }
+
+  if (!socios.includes(email)) {
+    document.getElementById("loginError").style.display = "block";
+    return;
+  }
+
+  emailUsuario = email;
+  iniciarApp(false);
+};
+
+function iniciarApp(esAdmin) {
+  document.getElementById("login").style.display = "none";
+  document.getElementById("app").style.display = "block";
+
+  document.getElementById("panelSocios").style.display = esAdmin ? "block" : "none";
+  if (esAdmin) mostrarSocios();
+
+  generarFechas();
+  mostrarReservas();
+}
+
+/* =========================
+   FECHAS
+========================= */
+
+function generarFechas() {
+  const cont = document.getElementById("selectorFechas");
+  cont.innerHTML = "";
+
+  for (let i = 0; i < DIAS_LIMITE; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    const iso = d.toISOString().split("T")[0];
+
+    const b = document.createElement("button");
+    const f = formatearFechaBonita(iso);
+
+    b.innerHTML = `
+      <div class="dia-semana">${f.diaSemana}</div>
+      <div class="dia-numero">${f.dia}</div>
+      <div class="mes">${f.mes}</div>
+    `;
+    if (i === 0) {
+      b.classList.add("active");
+      fechaSeleccionada = iso;
+    }
+
+    b.onclick = () => {
+      document.querySelectorAll("#selectorFechas button").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      fechaSeleccionada = iso;
+      generarHorarios();
+    };
+
+    cont.appendChild(b);
+  }
+
+  generarHorarios();
+}
+
+/* =========================
+   PISTA Y DURACIÓN
+========================= */
 
 function pistaActual() {
   return document.querySelector(".pista-btn.active")?.dataset.pista || "A";
@@ -30,292 +196,226 @@ function duracionActual() {
   return Number(document.querySelector(".duracion-btn.active")?.dataset.duracion || 60);
 }
 
-function sumarMinutos(hora, minutos) {
-  const [h, m] = hora.split(":").map(Number);
-  const d = new Date();
-  d.setHours(h);
-  d.setMinutes(m + minutos);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
-function resetearSeleccion() {
-  horaSeleccionada = null;
-  $("confirmarReserva").disabled = true;
-  document.querySelectorAll(".bloque-hora").forEach(b => b.classList.remove("active"));
-}
-
-/********************************************************
- * LOGIN
- ********************************************************/
-
-async function cargarSocios() {
-  const res = await fetch("/api/socios");
-  socios = await res.json();
-}
-
-$("btnAcceder").addEventListener("click", async () => {
-  const email = $("emailInput").value.trim().toLowerCase();
-  if (!email) return;
-
-  await cargarSocios();
-
-  const socio = socios.find(s => s.email === email);
-  if (!socio) {
-    $("loginError").style.display = "block";
-    return;
-  }
-
-  emailUsuario = socio.email;
-  rolUsuario = socio.rol;
-
-  $("login").style.display = "none";
-  $("app").style.display = "block";
-
-  if (rolUsuario === "admin") {
-    $("panelSocios").style.display = "block";
-    renderSocios();
-  }
-
-  await cargarReservas();
-  generarSelectorFechas();
-  mostrarReservas();
+document.querySelectorAll(".pista-btn").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll(".pista-btn").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    generarHorarios();
+  };
 });
 
-/********************************************************
- * SOCIOS (solo admin)
- ********************************************************/
-
-function renderSocios() {
-  const ul = $("listaSocios");
-  ul.innerHTML = "";
-
-  socios.forEach((s, idx) => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      ${s.email} (${s.rol})
-      <button>❌</button>
-    `;
-    li.querySelector("button").onclick = async () => {
-      if (s.rol === "admin") {
-        alert("No puedes borrar el admin");
-        return;
-      }
-      socios.splice(idx, 1);
-      await fetch("/api/socios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(socios)
-      });
-      renderSocios();
-    };
-    ul.appendChild(li);
-  });
-}
-
-$("btnAgregarSocio").addEventListener("click", async () => {
-  const email = $("nuevoSocioInput").value.trim().toLowerCase();
-  if (!email) return;
-
-  if (socios.some(s => s.email === email)) return;
-
-  socios.push({ email, rol: "socio" });
-
-  await fetch("/api/socios", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(socios)
-  });
-
-  $("nuevoSocioInput").value = "";
-  renderSocios();
+document.querySelectorAll(".duracion-btn").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll(".duracion-btn").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    generarHorarios();
+  };
 });
 
-/********************************************************
- * FECHAS
- ********************************************************/
+/* =========================
+   SOLAPES
+========================= */
 
-function generarSelectorFechas() {
-  const cont = $("selectorFechas");
-  cont.innerHTML = "";
+function haySolape(bloques) {
+  if (!fechaSeleccionada) return false;
 
-  const hoy = new Date();
-
-  for (let i = 0; i < 15; i++) {
-    const f = new Date();
-    f.setDate(hoy.getDate() + i);
-
-    const btn = document.createElement("button");
-    btn.className = "fecha-btn";
-    btn.innerHTML = `
-      ${f.toLocaleDateString("es-ES", { weekday: "short" })}<br>
-      <strong>${f.getDate()}</strong><br>
-      ${f.toLocaleDateString("es-ES", { month: "short" })}
-    `;
-
-    btn.onclick = () => {
-      document.querySelectorAll(".fecha-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      fechaSeleccionada = f;
-      generarHorarios();
-    };
-
-    cont.appendChild(btn);
-
-    if (i === 0) {
-      btn.classList.add("active");
-      fechaSeleccionada = f;
-    }
-  }
-
-  generarHorarios();
-}
-
-/********************************************************
- * HORARIOS
- ********************************************************/
-
-function generarBloques(tramos) {
-  const bloques = [];
-  tramos.forEach(([ini, fin]) => {
-    let m = Number(ini.split(":")[0]) * 60 + Number(ini.split(":")[1]);
-    const finM = Number(fin.split(":")[0]) * 60 + Number(fin.split(":")[1]);
-    while (m < finM) {
-      bloques.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`);
-      m += 30;
-    }
+  return reservas.some(r => {
+    if (r.fecha !== fechaSeleccionada) return false;
+    if (r.pistaId !== pistaActual()) return false;
+    if (!Array.isArray(r.bloques)) return false;
+    return r.bloques.some(b => bloques.includes(b));
   });
-  return bloques;
 }
 
-function disponible(hora, fechaStr, pista) {
-  const dur = duracionActual();
-  const bloquesNecesarios = dur / 30;
-
-  for (let i = 0; i < bloquesNecesarios; i++) {
-    const h = sumarMinutos(hora, i * 30);
-    if (reservas.some(r =>
-      r.fecha === fechaStr &&
-      r.pistaId === pista &&
-      r.bloques.includes(h)
-    )) return false;
-  }
-  return true;
-}
+/* =========================
+   HORARIOS
+========================= */
 
 function generarHorarios() {
-  const cal = $("calendario");
+  const cal = document.getElementById("calendario");
   cal.innerHTML = "";
-  resetearSeleccion();
+  horaSeleccionada = null;
+  document.getElementById("confirmarReserva").disabled = true;
 
-  if (!fechaSeleccionada) return;
+  const duracion = duracionActual();
 
-  const fechaStr = fechaSeleccionada.toISOString().split("T")[0];
-  const pista = pistaActual();
+  const apertura = 9 * 60;
+  const cierre = 22 * 60;
 
-  const tramos =
-    fechaSeleccionada.getDay() === 0 || fechaSeleccionada.getDay() === 6
-      ? [["09:00", "13:00"], ["17:00", "22:00"]]
-      : [["09:00", "13:00"], ["17:30", "22:00"]];
+  const comidaInicio = 13 * 60;
+  const comidaFin = 17 * 60;
 
-  generarBloques(tramos)
-    .filter(h => disponible(h, fechaStr, pista))
-    .forEach(h => {
-      const btn = document.createElement("button");
-      btn.className = "bloque-hora";
-      btn.textContent = h;
-      btn.onclick = () => {
-        document.querySelectorAll(".bloque-hora").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        horaSeleccionada = h;
-        $("confirmarReserva").disabled = false;
-      };
-      cal.appendChild(btn);
-    });
+  for (let inicio = apertura; inicio <= cierre - duracion; inicio += 30) {
+    const fin = inicio + duracion;
+
+    if (Math.max(inicio, comidaInicio) < Math.min(fin, comidaFin)) continue;
+
+    const h = String(Math.floor(inicio / 60)).padStart(2, "0");
+    const m = String(inicio % 60).padStart(2, "0");
+    const hora = `${h}:${m}`;
+
+    const bloques = bloquesDesdeHora(hora, duracion);
+    if (haySolape(bloques)) continue;
+
+    const b = document.createElement("button");
+    b.textContent = hora;
+
+    b.onclick = () => {
+      document.querySelectorAll("#calendario button").forEach(x => x.classList.remove("active"));
+      b.classList.add("active");
+      horaSeleccionada = hora;
+      document.getElementById("confirmarReserva").disabled = false;
+    };
+
+    cal.appendChild(b);
+  }
 }
 
-/********************************************************
- * RESERVAS
- ********************************************************/
+/* =========================
+   CONFIRMAR
+========================= */
 
-async function cargarReservas() {
-  const res = await fetch("/api/reservas");
-  reservas = await res.json();
-}
-
-function contarReservasActivas() {
-  const hoy = new Date();
-  const fin = new Date();
-  fin.setDate(hoy.getDate() + DIAS_VENTANA);
-
-  return reservas.filter(r => {
-    if (r.email !== emailUsuario) return false;
-    const f = new Date(r.fecha);
-    return f >= hoy && f <= fin;
-  }).length;
-}
-
-$("confirmarReserva").onclick = async () => {
-  if (!horaSeleccionada || !fechaSeleccionada) return;
-
-  if (contarReservasActivas() >= LIMITE_RESERVAS) {
+document.getElementById("confirmarReserva").onclick = async () => {
+  const reservasUsuario = reservas.filter(
+  r => r.email === emailUsuario && !reservaEstaEnElPasado(r)
+);
+  if (reservasUsuario.length >= LIMITE_RESERVAS) {
     alert("Has alcanzado el límite de reservas");
     return;
   }
 
-  const bloques = [];
-  const dur = duracionActual();
-
-  for (let i = 0; i < dur / 30; i++) {
-    bloques.push(sumarMinutos(horaSeleccionada, i * 30));
-  }
+  const duracion = duracionActual();
+  const bloques = bloquesDesdeHora(horaSeleccionada, duracion);
 
   const reserva = {
-    fecha: fechaSeleccionada.toISOString().split("T")[0],
+    email: emailUsuario,
+    fecha: fechaSeleccionada,
     pistaId: pistaActual(),
-    bloques,
-    email: emailUsuario
+    bloques
   };
 
-  await fetch("/api/reservas", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(reserva)
-  });
+await guardarReserva(reserva);
+await cargarReservas();
+generarHorarios();
+mostrarReservas();
 
-  await cargarReservas();
-  generarHorarios();
-  mostrarReservas();
+const pistaNombre = pistaActual() === "A" ? "tenis" : "pádel";
+
+const inicio = bloques[0];
+const fin = sumarMinutos(bloques[bloques.length - 1], 30);
+
+const fecha = new Date(fechaSeleccionada);
+const textoFecha = fecha.toLocaleDateString("es-ES", {
+  weekday: "long",
+  day: "numeric",
+  month: "long"
+});
+
+alert(
+  `✅ Reserva confirmada\n\n` +
+  `Pista de ${pistaNombre} del Tejar\n` +
+  `${textoFecha}\n` +
+  `De ${inicio} a ${fin}`
+);
 };
 
+/* =========================
+   MIS RESERVAS
+========================= */
+
 function mostrarReservas() {
-  const ul = $("reservasUl");
+  const ul = document.getElementById("reservasUl");
   ul.innerHTML = "";
 
   reservas
-    .filter(r => r.email === emailUsuario)
-    .forEach((r, idx) => {
-      const li = document.createElement("li");
-      const inicio = r.bloques[0];
-      const fin = sumarMinutos(r.bloques[r.bloques.length - 1], 30);
+  .filter(r =>
+    r.email === emailUsuario &&
+    !reservaEstaEnElPasado(r)).
+    forEach((r, idx) => {
+    const li = document.createElement("li");
+    const inicio = r.bloques[0];
+    const fin = sumarMinutos(r.bloques[r.bloques.length - 1], 30);
 
-      li.innerHTML = `
-        ${r.fecha} · ${r.pistaId === "A" ? "Tenis" : "Pádel"} · ${inicio} – ${fin}
-        <button>❌</button>
-      `;
+    li.innerHTML = `${r.fecha} · ${r.pistaId === "A" ? "Tenis" : "Pádel"} · ${inicio} – ${fin} <button>❌</button>`;
 
-      li.querySelector("button").onclick = async () => {
-        await fetch(`/api/reservas/${idx}`, { method: "DELETE" });
-        await cargarReservas();
-        generarHorarios();
-        mostrarReservas();
-      };
+    li.querySelector("button").onclick = async () => {
+      await borrarReserva(idx);
+      await cargarReservas();
+      generarHorarios();
+      mostrarReservas();
+    };
 
-      ul.appendChild(li);
-    });
+    ul.appendChild(li);
+  });
 }
 
-/********************************************************
- * CERRAR SESIÓN
- ********************************************************/
+/* =========================
+   SOCIOS
+========================= */
 
-$("cerrarSesion").onclick = () => location.reload();
+function mostrarSocios() {
+  const ul = document.getElementById("listaSocios");
+  ul.innerHTML = "";
+  socios.forEach(s => {
+    const li = document.createElement("li");
+    li.textContent = s;
+    ul.appendChild(li);
+  });
+}
+
+document.getElementById("agregarSocio").onclick = async () => {
+  const input = document.getElementById("nuevoSocio");
+  const email = input.value.trim().toLowerCase();
+  if (!email) return;
+
+  await fetch("/api/socios", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email })
+  });
+
+  input.value = "";
+  await cargarSocios();
+  mostrarSocios();
+};
+
+document.getElementById("descargarCSV").onclick = () => {
+  window.open("/api/reservas.csv", "_blank");
+};
+
+
+window.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("descargarCSV");
+  if (btn) {
+    btn.onclick = () => {
+      window.open("/api/reservas.csv", "_blank");
+    };
+  }
+});
+
+
+
+
+/* =========================
+   CERRAR SESIÓN
+========================= */
+
+window.addEventListener("DOMContentLoaded", () => {
+
+  // BOTÓN CERRAR SESIÓN
+  const cerrar = document.getElementById("cerrarSesion");
+  if (cerrar) {
+    cerrar.onclick = () => {
+      location.reload();
+    };
+  }
+
+  // BOTÓN CSV (admin)
+  const csv = document.getElementById("descargarCSV");
+  if (csv) {
+    csv.onclick = () => {
+      window.open("/api/reservas.csv", "_blank");
+    };
+  }
+
+});
