@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const PORT = 3100;
+const PORT = process.env.PORT || 3100;
 
 // ===== CONFIG ADMIN =====
 const ADMIN_EMAIL = "admin@eltejar.com";
@@ -15,28 +15,48 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // ===== HELPERS =====
 const leerJSON = (file) => {
-  const filePath = path.join(__dirname, "data", file);
+  const dirPath = path.join(__dirname, "data");
+  const filePath = path.join(dirPath, file);
+
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath);
+  }
 
   if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, "[]");
     return [];
   }
 
   const contenido = fs.readFileSync(filePath, "utf-8").trim();
-
-  if (!contenido) {
-    return [];
-  }
+  if (!contenido) return [];
 
   return JSON.parse(contenido);
 };
 
-const escribirJSON = (file, data) =>
+const escribirJSON = (file, data) => {
   fs.writeFileSync(
     path.join(__dirname, "data", file),
     JSON.stringify(data, null, 2)
   );
+};
 
-console.log("LEYENDO SOCIOS DESDE:", path.join(__dirname, "data", "socios.json"));
+console.log(
+  "LEYENDO SOCIOS DESDE:",
+  path.join(__dirname, "data", "socios.json")
+);
+
+// ===== INICIALIZAR SOCIOS BASE =====
+const sociosIniciales = [
+  "juan@gmail.com",
+  "miguel@gmail.com",
+  "maria@gmail.com"
+];
+
+const sociosActuales = leerJSON("socios.json");
+if (sociosActuales.length === 0) {
+  escribirJSON("socios.json", sociosIniciales);
+  console.log("⚙️ Socios iniciales creados");
+}
 
 // ===== ADMIN LOGIN =====
 app.post("/api/admin/login", (req, res) => {
@@ -56,8 +76,13 @@ app.get("/api/socios", (req, res) => {
 
 app.post("/api/socios", (req, res) => {
   const socios = leerJSON("socios.json");
-  socios.push(req.body.email);
-  escribirJSON("socios.json", socios);
+  const email = req.body.email;
+
+  if (email && !socios.includes(email)) {
+    socios.push(email);
+    escribirJSON("socios.json", socios);
+  }
+
   res.json({ ok: true });
 });
 
@@ -104,7 +129,6 @@ app.get("/api/reservas.csv", (req, res) => {
     })();
 
     const pista = r.pistaId === "A" ? "Tenis" : "Pádel";
-
     csv += `${r.email},${r.fecha},${pista},${inicio},${fin}\n`;
   });
 
@@ -113,9 +137,7 @@ app.get("/api/reservas.csv", (req, res) => {
   res.send(csv);
 });
 
-
-// ===== START =====
+// ===== START SERVER (UNA SOLA VEZ) =====
 app.listen(PORT, () => {
   console.log(`🚀 Servidor escuchando en http://localhost:${PORT}`);
 });
-
