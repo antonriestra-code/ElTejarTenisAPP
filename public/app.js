@@ -83,8 +83,14 @@ function formatearFechaBonita(iso) {
 ========================= */
 
 async function cargarSocios() {
-  const r = await fetch("/api/socios");
-  socios = (await r.json()).map(s => s.toLowerCase().trim());
+  try {
+    const r = await fetch("/api/socios");
+    if (!r.ok) throw new Error("Error cargando socios");
+    socios = (await r.json()).map(s => s.toLowerCase().trim());
+  } catch (e) {
+    alert("⚠️ No se pudo conectar con el servidor. Inténtalo de nuevo.");
+    throw e;
+  }
 }
 
 async function cargarReservas() {

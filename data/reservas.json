@@ -90,5 +90,32 @@
       "17:00",
       "17:30"
     ]
+  },
+  {
+    "email": "carlos@gmail.com",
+    "fecha": "2026-02-13",
+    "pistaId": "B",
+    "bloques": [
+      "09:00",
+      "09:30"
+    ]
+  },
+  {
+    "email": "juan@gmail.com",
+    "fecha": "2026-02-14",
+    "pistaId": "A",
+    "bloques": [
+      "20:00",
+      "20:30"
+    ]
+  },
+  {
+    "email": "javier@gmail.com",
+    "fecha": "2026-02-14",
+    "pistaId": "A",
+    "bloques": [
+      "21:00",
+      "21:30"
+    ]
   }
 ]
