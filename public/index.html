@@ -1,61 +1,67 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Club Deportivo el Tejar</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club Deportivo El Tejar</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<h1>Reservas Club Deportivo El Tejar</h1>
-<p style="color:#b45309; background:#fff7ed; padding:10px; border-radius:6px">
-  ⚠️ Entorno de pruebas. Las reservas pueden borrarse durante la fase de test.
-</p>
+<div class="overlay"></div>
 
-<!-- LOGIN USUARIO -->
-<div id="login">
-  <input id="emailInput" type="email" placeholder="tu@email.com">
-  <button id="btnAcceder">Acceder</button>
-  <p id="loginError" style="display:none;color:red">No autorizado</p>
+<!-- LOGIN -->
+<div id="login" class="card login-card">
+  <img src="logo.png" class="logo">
+  <h1>Club Deportivo El Tejar</h1>
+
+  <input type="email" id="email" placeholder="Correo electrónico" autocomplete="off">
+  <input type="password" id="password" placeholder="Contraseña" autocomplete="new-password" style="display:none;">
+  <button class="primary-btn" onclick="login()">Acceder</button>
 </div>
+
 
 <!-- APP -->
-<div id="app" style="display:none">
+<div id="app" style="display:none;">
 
-  <div id="selectorFechas"></div>
-
+<header>
   <div>
-    <button class="pista-btn active" data-pista="A">Tenis</button>
-    <button class="pista-btn" data-pista="B">Pádel</button>
+    <h2 id="bienvenida"></h2>
+  </div>
+  <button class="secondary-btn" onclick="logout()">Cerrar sesión</button>
+</header>
+
+<div class="card reserva-card">
+
+  <div class="section">
+    <h3>Selecciona fecha</h3>
+    <div id="fechas" class="fechas-grid"></div>
   </div>
 
-  <div>
-    <button class="duracion-btn active" data-duracion="60">60 min</button>
-    <button class="duracion-btn" data-duracion="90">90 min</button>
+  <div class="section">
+    <h3>Pista</h3>
+    <div class="pistas">
+      <button id="btnTenis" onclick="seleccionarPista('Tenis')">Tenis</button>
+      <button id="btnPadel" onclick="seleccionarPista('Padel')">Pádel</button>
+    </div>
   </div>
 
-  <div id="calendario"></div>
+  <div class="section">
+    <h3>Horario</h3>
+    <div id="horas" class="horas-grid"></div>
+  </div>
 
-  <button id="confirmarReserva" disabled>Confirmar</button>
+  <button class="primary-btn confirmar" onclick="confirmarReserva()">Confirmar reserva</button>
 
-  <h3>Mis reservas</h3>
-  <ul id="reservasUl"></ul>
+  <!-- MIS RESERVAS -->
+  <div class="mis-reservas">
+    <h3>Mis reservas activas</h3>
+    <div id="misReservas"></div>
+  </div>
 
-
-
-  <!-- PANEL SOCIOS -->
-  <div id="panelSocios" style="display:none">
-    <h3>Gestión de socios</h3>
-    <ul id="listaSocios"></ul>
-     <input id="nuevoSocio" placeholder="email del socio">
-  <button id="agregarSocio">Agregar</button>
-
-  <hr>
-
-  <button id="descargarCSV">📥 Descargar reservas (CSV)</button>
 </div>
 
-<button id="cerrarSesion">🚪 Cerrar sesión</button>
+</div>
 
 <script src="app.js"></script>
 </body>

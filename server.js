@@ -1,64 +1,26 @@
+console.log("=== SERVER CORRECTO CARGADO ===");
+
+require("dotenv").config();
 const express = require("express");
-const fs = require("fs");
 const path = require("path");
+const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 const PORT = process.env.PORT || 3100;
 
-// ===== CONFIG ADMIN =====
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 const ADMIN_EMAIL = "admin@eltejar.com";
 const ADMIN_PASSWORD = "1234";
 
-// ===== MIDDLEWARE =====
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// ===== HELPERS =====
-const leerJSON = (file) => {
-  const dirPath = path.join(__dirname, "data");
-  const filePath = path.join(dirPath, file);
 
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath);
-  }
-
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, "[]");
-    return [];
-  }
-
-  const contenido = fs.readFileSync(filePath, "utf-8").trim();
-  if (!contenido) return [];
-
-  return JSON.parse(contenido);
-};
-
-const escribirJSON = (file, data) => {
-  fs.writeFileSync(
-    path.join(__dirname, "data", file),
-    JSON.stringify(data, null, 2)
-  );
-};
-
-console.log(
-  "LEYENDO SOCIOS DESDE:",
-  path.join(__dirname, "data", "socios.json")
-);
-
-// ===== INICIALIZAR SOCIOS BASE =====
-const sociosIniciales = [
-  "juan@gmail.com",
-  "miguel@gmail.com",
-  "maria@gmail.com"
-];
-
-const sociosActuales = leerJSON("socios.json");
-if (sociosActuales.length === 0) {
-  escribirJSON("socios.json", sociosIniciales);
-  console.log("⚙️ Socios iniciales creados");
-}
-
-// ===== ADMIN LOGIN =====
+// ===== LOGIN ADMIN =====
 app.post("/api/admin/login", (req, res) => {
   const { email, password } = req.body;
 
@@ -69,75 +31,129 @@ app.post("/api/admin/login", (req, res) => {
   res.status(401).json({ ok: false });
 });
 
+
 // ===== SOCIOS =====
-app.get("/api/socios", (req, res) => {
-  res.json(leerJSON("socios.json"));
+app.get("/api/socios", async (req, res) => {
+
+  res.set("Cache-Control", "no-store");
+
+  const { data, error } = await supabase
+    .from("socios")
+    .select("email, nombre");
+
+  if (error) return res.status(500).json({ error });
+
+  res.json(data);
 });
 
-app.post("/api/socios", (req, res) => {
-  const socios = leerJSON("socios.json");
-  const email = req.body.email;
 
-  if (email && !socios.includes(email)) {
-    socios.push(email);
-    escribirJSON("socios.json", socios);
-  }
+
+app.post("/api/socios", async (req, res) => {
+  const { email } = req.body;
+
+  const { error } = await supabase
+    .from("socios")
+    .insert([{ email }]);
+
+  if (error) return res.status(400).json({ error });
 
   res.json({ ok: true });
 });
 
-app.delete("/api/socios/:email", (req, res) => {
-  const socios = leerJSON("socios.json").filter(
-    s => s !== req.params.email
-  );
-  escribirJSON("socios.json", socios);
+app.delete("/api/socios/:email", async (req, res) => {
+  const { error } = await supabase
+    .from("socios")
+    .delete()
+    .eq("email", req.params.email);
+
+  if (error) return res.status(500).json({ error });
+
   res.json({ ok: true });
 });
+
 
 // ===== RESERVAS =====
-app.get("/api/reservas", (req, res) => {
-  res.json(leerJSON("reservas.json"));
+app.get("/api/reservas", async (req, res) => {
+
+  const hoy = new Date().toISOString().split("T")[0];
+
+  const { data, error } = await supabase
+    .from("reservas")
+    .select("*")
+    .gte("fecha", hoy);
+
+  if (error) return res.status(500).json({ error });
+
+  res.json(data);
 });
 
-app.post("/api/reservas", (req, res) => {
-  const reservas = leerJSON("reservas.json");
-  reservas.push(req.body);
-  escribirJSON("reservas.json", reservas);
+
+app.post("/api/reservas", async (req, res) => {
+
+  const { email, fecha, pista, hora } = req.body;
+
+const ahora = new Date();
+
+const fechaHoraReserva = new Date(`${fecha}T${hora}`);
+
+if(fechaHoraReserva < ahora){
+  return res.status(400).json({
+    error: "No es posible reservar en una hora pasada"
+  });
+}
+
+  const hoy = new Date();
+  const limite = new Date();
+  limite.setDate(hoy.getDate()+15);
+
+  const { data:activas } = await supabase
+    .from("reservas")
+    .select("*")
+    .eq("email", email)
+    .gte("fecha", hoy.toISOString().split("T")[0]);
+
+  if(activas.length >= 4){
+    return res.status(400).json({error:"Máximo 4 reservas activas"});
+  }
+
+  const { error } = await supabase
+    .from("reservas")
+    .insert([{ email, fecha, pista, hora }]);
+
+  if (error) return res.status(500).json({ error });
+
   res.json({ ok: true });
 });
 
-app.delete("/api/reservas/:id", (req, res) => {
-  const reservas = leerJSON("reservas.json");
-  reservas.splice(req.params.id, 1);
-  escribirJSON("reservas.json", reservas);
+app.delete("/api/reservas/:id", async (req, res) => {
+  const { error } = await supabase
+    .from("reservas")
+    .delete()
+    .eq("id", req.params.id);
+
+  if (error) return res.status(500).json({ error });
+
   res.json({ ok: true });
 });
 
-// ===== EXPORTAR CSV =====
-app.get("/api/reservas.csv", (req, res) => {
-  const reservas = leerJSON("reservas.json");
 
-  let csv = "email,fecha,pista,inicio,fin\n";
+// ===== EXPORT CSV =====
+app.get("/api/export", async (req, res) => {
+  const { data } = await supabase
+    .from("reservas")
+    .select("*");
 
-  reservas.forEach(r => {
-    const inicio = r.bloques[0];
-    const fin = (() => {
-      const [h, m] = r.bloques[r.bloques.length - 1].split(":").map(Number);
-      const d = new Date();
-      d.setHours(h, m + 30, 0, 0);
-      return d.toTimeString().slice(0, 5);
-    })();
-
-    const pista = r.pistaId === "A" ? "Tenis" : "Pádel";
-    csv += `${r.email},${r.fecha},${pista},${inicio},${fin}\n`;
+  let csv = "email,fecha,pista,hora\n";
+  data.forEach(r => {
+    csv += `${r.email},${r.fecha},${r.pista},${r.hora}\n`;
   });
 
   res.header("Content-Type", "text/csv");
-  res.header("Content-Disposition", "attachment; filename=reservas.csv");
+  res.attachment("reservas.csv");
   res.send(csv);
 });
 
-// ===== START SERVER (UNA SOLA VEZ) =====
+
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor escuchando en http://localhost:${PORT}`);
+  console.log(`🚀 Servidor en http://localhost:${PORT}`);
 });

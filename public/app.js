@@ -1,427 +1,290 @@
-/* =========================
-   CONFIGURACIÓN
-========================= */
+console.log("APP NUEVA CARGADA");
 
-const ADMIN_EMAIL = "admin@eltejar.com";
-const ADMIN_PASSWORD = "1234";
+let usuario = null;        // email (no lo tocamos)
+let usuarioNombre = null;  // solo visual
 
-const LIMITE_RESERVAS = 5;
-const DIAS_LIMITE = 14;
-
-const APERTURA = 9;
-const CIERRE = 22;
-const INTERVALO = 30;
-
-/* =========================
-   ESTADO GLOBAL
-========================= */
-
-let emailUsuario = null;
-let socios = [];
 let reservas = [];
-
 let fechaSeleccionada = null;
+let pistaSeleccionada = null;
 let horaSeleccionada = null;
 
-/* =========================
-   HELPERS FECHA / HORA
-========================= */
+/* ================= LOGIN ================= */
 
-function hoyISO() {
-  return new Date().toISOString().split("T")[0];
-}
+async function login() {
 
-function sumarMinutos(hora, minutos) {
-  const [h, m] = hora.split(":").map(Number);
-  const d = new Date();
-  d.setHours(h, m + minutos, 0, 0);
-  return d.toTimeString().slice(0, 5);
-}
+  const email = document.getElementById("email").value.trim();
+  const passwordInput = document.getElementById("password");
 
-function reservaEstaEnElPasado(reserva) {
-  const hoy = new Date();
+  if (!email) return alert("Introduce correo");
 
-  const inicio = reserva.bloques[0];
-  const fin = sumarMinutos(
-    reserva.bloques[reserva.bloques.length - 1],
-    30
+  if (email === "admin@eltejar.com") {
+
+    passwordInput.style.display = "block";
+    if (!passwordInput.value) return alert("Introduce contraseña");
+
+    const res = await fetch("/api/admin/login", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,password:passwordInput.value})
+    });
+
+    if(!res.ok) return alert("Contraseña incorrecta");
+
+    window.location = "/admin.html";
+    return;
+  }
+
+  // LOGIN SOCIOS
+
+  const res = await fetch("/api/socios");
+  const socios = await res.json();
+
+  const socio = socios.find(s =>
+    s.email.trim().toLowerCase() === email.toLowerCase()
   );
 
-  const fechaHoraFin = new Date(`${reserva.fecha}T${fin}:00`);
+  if(!socio) return alert("No autorizado");
 
-  return fechaHoraFin <= hoy;
-}
+  usuario = email.toLowerCase();
+  usuarioNombre = socio.nombre;
 
-function bloquesDesdeHora(hora, duracion) {
-  const bloques = [];
-  let actual = hora;
-  for (let i = 0; i < duracion; i += 30) {
-    bloques.push(actual);
-    actual = sumarMinutos(actual, 30);
-  }
-  return bloques;
-}
+  document.getElementById("login").style.display="none";
+  document.getElementById("app").style.display="block";
 
-function formatearFechaBonita(iso) {
-  const [y, m, d] = iso.split("-").map(Number);
+  document.getElementById("bienvenida").textContent =
+    "Hola, " + usuarioNombre + ". Este es el sistema de reservas del Club Deportivo El Tejar.";
 
-  // Crear fecha en horario local (NO UTC)
-  const fecha = new Date(y, m - 1, d);
-
-  const dias = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-  const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-
-  return {
-    diaSemana: dias[fecha.getDay()],
-    dia: fecha.getDate(),
-    mes: meses[fecha.getMonth()]
-  };
-}
-
-/* =========================
-   API
-========================= */
-
-async function cargarSocios() {
-  try {
-    const r = await fetch("/api/socios");
-    if (!r.ok) throw new Error("Error cargando socios");
-    socios = (await r.json()).map(s => s.toLowerCase().trim());
-  } catch (e) {
-    alert("⚠️ No se pudo conectar con el servidor. Inténtalo de nuevo.");
-    throw e;
-  }
-}
-
-async function cargarReservas() {
-  const r = await fetch("/api/reservas");
-  reservas = await r.json();
-}
-
-async function guardarReserva(reserva) {
-  await fetch("/api/reservas", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(reserva)
-  });
-}
-
-async function borrarReserva(id) {
-  await fetch(`/api/reservas/${id}`, { method: "DELETE" });
-}
-
-/* =========================
-   LOGIN
-========================= */
-
-document.getElementById("btnAcceder").onclick = async () => {
-  const email = document.getElementById("emailInput").value.trim().toLowerCase();
-
-  await cargarSocios();
   await cargarReservas();
+}
 
-  if (email === ADMIN_EMAIL) {
-    const password = prompt("Contraseña (solo admin)");
-    if (password !== ADMIN_PASSWORD) {
-      alert("Contraseña incorrecta");
-      return;
-    }
-    emailUsuario = email;
-    iniciarApp(true);
-    return;
+/* ================= LOGOUT ================= */
+
+function logout(){
+  usuario = null;
+  usuarioNombre = null;
+  reservas = [];
+  fechaSeleccionada = null;
+  pistaSeleccionada = null;
+  horaSeleccionada = null;
+
+  document.getElementById("app").style.display="none";
+  document.getElementById("login").style.display="block";
+
+  document.getElementById("email").value="";
+  document.getElementById("password").value="";
+  document.getElementById("password").style.display="none";
+
+  document.getElementById("fechas").innerHTML="";
+  document.getElementById("horas").innerHTML="";
+  document.getElementById("misReservas").innerHTML="";
+}
+
+/* ================= CARGAR RESERVAS ================= */
+
+async function cargarReservas(){
+  try{
+    const res = await fetch("/api/reservas");
+    reservas = res.ok ? await res.json() : [];
+    if(!Array.isArray(reservas)) reservas=[];
+  }catch(e){
+    reservas=[];
   }
-
-  if (!socios.includes(email)) {
-    document.getElementById("loginError").style.display = "block";
-    return;
-  }
-
-  emailUsuario = email;
-  iniciarApp(false);
-};
-
-function iniciarApp(esAdmin) {
-  document.getElementById("login").style.display = "none";
-  document.getElementById("app").style.display = "block";
-
-  document.getElementById("panelSocios").style.display = esAdmin ? "block" : "none";
-  if (esAdmin) mostrarSocios();
 
   generarFechas();
-  mostrarReservas();
+  renderMisReservas();
 }
 
-/* =========================
-   FECHAS
-========================= */
+/* ================= FECHAS ================= */
 
-function generarFechas() {
-  const cont = document.getElementById("selectorFechas");
-  cont.innerHTML = "";
+function generarFechas(){
+  const cont=document.getElementById("fechas");
+  cont.innerHTML="";
 
-  for (let i = 0; i < DIAS_LIMITE; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    const iso = d.toISOString().split("T")[0];
+  for(let i=0;i<15;i++){
+    const d=new Date();
+    d.setDate(d.getDate()+i);
 
-    const b = document.createElement("button");
-    const f = formatearFechaBonita(iso);
+    const fecha=d.toISOString().split("T")[0];
+    const btn=document.createElement("button");
+    btn.className="fecha-btn";
 
-    b.innerHTML = `
-      <div class="dia-semana">${f.diaSemana}</div>
-      <div class="dia-numero">${f.dia}</div>
-      <div class="mes">${f.mes}</div>
+    btn.innerHTML=`
+      <small>${d.toLocaleDateString("es-ES",{weekday:"short"})}</small><br>
+      <strong>${d.getDate()}</strong><br>
+      <small>${d.toLocaleDateString("es-ES",{month:"short"})}</small>
     `;
-    if (i === 0) {
-      b.classList.add("active");
-      fechaSeleccionada = iso;
+
+    btn.onclick=()=>{
+      document.querySelectorAll(".fecha-btn").forEach(b=>b.classList.remove("seleccionado"));
+      btn.classList.add("seleccionado");
+      fechaSeleccionada=fecha;
+      generarHoras();
+    };
+
+    cont.appendChild(btn);
+  }
+}
+
+/* ================= PISTAS ================= */
+
+function seleccionarPista(p){
+  pistaSeleccionada=p;
+
+  document.getElementById("btnTenis").classList.remove("seleccionado");
+  document.getElementById("btnPadel").classList.remove("seleccionado");
+  document.getElementById("btn"+p).classList.add("seleccionado");
+
+  generarHoras();
+}
+
+/* ================= HORAS ================= */
+
+function generarHoras(){
+  const cont=document.getElementById("horas");
+  cont.innerHTML="";
+  if(!fechaSeleccionada||!pistaSeleccionada)return;
+
+for(let h=9; h<=21; h++){
+
+  // ⛔ BLOQUE HORARIO CENTRAL NO RESERVABLE
+  if(h >= 13 && h < 17){
+    continue; // salta esas horas
+  }
+
+  const hora=(h<10?"0"+h:h)+":00";
+
+    const btn=document.createElement("button");
+    btn.className="hora-btn";
+    btn.textContent=hora;
+
+    const ocupada=reservas.find(r=>
+      r.fecha===fechaSeleccionada &&
+      r.pista===pistaSeleccionada &&
+      r.hora===hora
+    );
+
+    if(ocupada){
+      btn.classList.add("ocupado");
+      btn.disabled=true;
     }
 
-    b.onclick = () => {
-      document.querySelectorAll("#selectorFechas button").forEach(x => x.classList.remove("active"));
-      b.classList.add("active");
-      fechaSeleccionada = iso;
-      generarHorarios();
+    btn.onclick=()=>{
+      document.querySelectorAll(".hora-btn").forEach(b=>b.classList.remove("seleccionado"));
+      btn.classList.add("seleccionado");
+      horaSeleccionada=hora;
     };
 
-    cont.appendChild(b);
+    cont.appendChild(btn);
   }
-
-  generarHorarios();
 }
 
-/* =========================
-   PISTA Y DURACIÓN
-========================= */
+/* ================= CONFIRMAR ================= */
 
-function pistaActual() {
-  return document.querySelector(".pista-btn.active")?.dataset.pista || "A";
-}
+async function confirmarReserva(){
 
-function duracionActual() {
-  return Number(document.querySelector(".duracion-btn.active")?.dataset.duracion || 60);
-}
+  if(!fechaSeleccionada || !pistaSeleccionada || !horaSeleccionada)
+    return alert("Selecciona fecha, pista y hora");
 
-document.querySelectorAll(".pista-btn").forEach(b => {
-  b.onclick = () => {
-    document.querySelectorAll(".pista-btn").forEach(x => x.classList.remove("active"));
-    b.classList.add("active");
-    generarHorarios();
-  };
-});
-
-document.querySelectorAll(".duracion-btn").forEach(b => {
-  b.onclick = () => {
-    document.querySelectorAll(".duracion-btn").forEach(x => x.classList.remove("active"));
-    b.classList.add("active");
-    generarHorarios();
-  };
-});
-
-/* =========================
-   SOLAPES
-========================= */
-
-function haySolape(bloques) {
-  if (!fechaSeleccionada) return false;
-
-  return reservas.some(r => {
-    if (r.fecha !== fechaSeleccionada) return false;
-    if (r.pistaId !== pistaActual()) return false;
-    if (!Array.isArray(r.bloques)) return false;
-    return r.bloques.some(b => bloques.includes(b));
+  const res = await fetch("/api/reservas",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      email:usuario,
+      fecha:fechaSeleccionada,
+      pista:pistaSeleccionada,
+      hora:horaSeleccionada
+    })
   });
+
+  if(!res.ok){
+  const data = await res.json();
+  return alert(data.error || "Error al confirmar");
 }
 
-/* =========================
-   HORARIOS
-========================= */
+  const fechaObj = new Date(fechaSeleccionada);
+  const fechaBonita = fechaObj.toLocaleDateString("es-ES", {
+    weekday: "long",
+    day: "numeric",
+    month: "long"
+  });
+  const fechaFormateada =
+    fechaBonita.charAt(0).toUpperCase() + fechaBonita.slice(1);
 
-function generarHorarios() {
-  const cal = document.getElementById("calendario");
-  cal.innerHTML = "";
+  alert(
+`Confirmada la reserva en la pista de ${pistaSeleccionada}
+para el ${fechaFormateada},
+a las ${horaSeleccionada}.
+
+Recuerde cancelarla si finalmente no pudiera asistir.
+
+Gracias por utilizar el sistema de reservas del Club Deportivo El Tejar.`
+  );
+
+  await cargarReservas();
+
+  // 🔹 Limpiamos selección
+  fechaSeleccionada = null;
+  pistaSeleccionada = null;
   horaSeleccionada = null;
-  document.getElementById("confirmarReserva").disabled = true;
 
-  const duracion = duracionActual();
-
-  const apertura = 9 * 60;
-  const cierre = 22 * 60;
-
-  const comidaInicio = 13 * 60;
-  const comidaFin = 17 * 60;
-
-  for (let inicio = apertura; inicio <= cierre - duracion; inicio += 30) {
-    const fin = inicio + duracion;
-
-    if (Math.max(inicio, comidaInicio) < Math.min(fin, comidaFin)) continue;
-
-    const h = String(Math.floor(inicio / 60)).padStart(2, "0");
-    const m = String(inicio % 60).padStart(2, "0");
-    const hora = `${h}:${m}`;
-
-    const bloques = bloquesDesdeHora(hora, duracion);
-    if (haySolape(bloques)) continue;
-
-    const b = document.createElement("button");
-    b.textContent = hora;
-
-    b.onclick = () => {
-      document.querySelectorAll("#calendario button").forEach(x => x.classList.remove("active"));
-      b.classList.add("active");
-      horaSeleccionada = hora;
-      document.getElementById("confirmarReserva").disabled = false;
-    };
-
-    cal.appendChild(b);
-  }
+  // 🔹 Opcional pero MUY recomendable:
+  document.querySelectorAll(".seleccionado")
+    .forEach(el => el.classList.remove("seleccionado"));
 }
 
-/* =========================
-   CONFIRMAR
-========================= */
 
-document.getElementById("confirmarReserva").onclick = async () => {
-  const reservasUsuario = reservas.filter(
-  r => r.email === emailUsuario && !reservaEstaEnElPasado(r)
-);
-  if (reservasUsuario.length >= LIMITE_RESERVAS) {
-    alert("Has alcanzado el límite de reservas");
+/* ================= MIS RESERVAS ================= */
+
+function renderMisReservas(){
+
+  const cont = document.getElementById("misReservas");
+  cont.innerHTML = "";
+
+  if(!usuario) return;
+
+  const mias = reservas.filter(r =>
+    r.email &&
+    r.email.trim().toLowerCase() === usuario
+  );
+
+  if(mias.length === 0){
+    cont.innerHTML = "<p>No tienes reservas activas.</p>";
     return;
   }
 
-  const duracion = duracionActual();
-  const bloques = bloquesDesdeHora(horaSeleccionada, duracion);
+  mias.forEach(r => {
 
-  const reserva = {
-    email: emailUsuario,
-    fecha: fechaSeleccionada,
-    pistaId: pistaActual(),
-    bloques
-  };
+    const fechaObj = new Date(r.fecha);
 
-await guardarReserva(reserva);
-await cargarReservas();
-generarHorarios();
-mostrarReservas();
+    const fechaBonita = fechaObj.toLocaleDateString("es-ES", {
+      weekday: "long",
+      day: "numeric",
+      month: "long"
+    });
 
-const pistaNombre = pistaActual() === "A" ? "tenis" : "pádel";
+    const fechaFormateada =
+      fechaBonita.charAt(0).toUpperCase() + fechaBonita.slice(1);
 
-const inicio = bloques[0];
-const fin = sumarMinutos(bloques[bloques.length - 1], 30);
+    const row = document.createElement("div");
+    row.className = "reserva-linea";
 
-const fecha = new Date(fechaSeleccionada);
-const textoFecha = fecha.toLocaleDateString("es-ES", {
-  weekday: "long",
-  day: "numeric",
-  month: "long"
-});
+    row.innerHTML = `
+      <span>${fechaFormateada}</span>
+      <span>${r.hora}</span>
+      <span>${r.pista}</span>
+      <button class="cancelar-btn">Cancelar</button>
+    `;
 
-alert(
-  `✅ Reserva confirmada\n\n` +
-  `Pista de ${pistaNombre} del Tejar\n` +
-  `${textoFecha}\n` +
-  `De ${inicio} a ${fin}`
-);
-};
-
-/* =========================
-   MIS RESERVAS
-========================= */
-
-function mostrarReservas() {
-  const ul = document.getElementById("reservasUl");
-  ul.innerHTML = "";
-
-  reservas
-  .filter(r =>
-    r.email === emailUsuario &&
-    !reservaEstaEnElPasado(r)).
-    forEach((r, idx) => {
-    const li = document.createElement("li");
-    const inicio = r.bloques[0];
-    const fin = sumarMinutos(r.bloques[r.bloques.length - 1], 30);
-
-    li.innerHTML = `${r.fecha} · ${r.pistaId === "A" ? "Tenis" : "Pádel"} · ${inicio} – ${fin} <button>❌</button>`;
-
-    li.querySelector("button").onclick = async () => {
-      await borrarReserva(idx);
+    row.querySelector("button").onclick = async () => {
+      await fetch("/api/reservas/" + r.id, { method:"DELETE" });
       await cargarReservas();
-      generarHorarios();
-      mostrarReservas();
     };
 
-    ul.appendChild(li);
+    cont.appendChild(row);
   });
 }
 
-/* =========================
-   SOCIOS
-========================= */
-
-function mostrarSocios() {
-  const ul = document.getElementById("listaSocios");
-  ul.innerHTML = "";
-  socios.forEach(s => {
-    const li = document.createElement("li");
-    li.textContent = s;
-    ul.appendChild(li);
-  });
-}
-
-document.getElementById("agregarSocio").onclick = async () => {
-  const input = document.getElementById("nuevoSocio");
-  const email = input.value.trim().toLowerCase();
-  if (!email) return;
-
-  await fetch("/api/socios", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email })
-  });
-
-  input.value = "";
-  await cargarSocios();
-  mostrarSocios();
-};
-
-document.getElementById("descargarCSV").onclick = () => {
-  window.open("/api/reservas.csv", "_blank");
-};
-
-
-window.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("descargarCSV");
-  if (btn) {
-    btn.onclick = () => {
-      window.open("/api/reservas.csv", "_blank");
-    };
-  }
-});
-
-
-
-
-/* =========================
-   CERRAR SESIÓN
-========================= */
-
-window.addEventListener("DOMContentLoaded", () => {
-
-  // BOTÓN CERRAR SESIÓN
-  const cerrar = document.getElementById("cerrarSesion");
-  if (cerrar) {
-    cerrar.onclick = () => {
-      location.reload();
-    };
-  }
-
-  // BOTÓN CSV (admin)
-  const csv = document.getElementById("descargarCSV");
-  if (csv) {
-    csv.onclick = () => {
-      window.open("/api/reservas.csv", "_blank");
-    };
-  }
-
-});
+window.login = login;
+window.logout = logout;
+window.seleccionarPista = seleccionarPista;
+window.confirmarReserva = confirmarReserva;
