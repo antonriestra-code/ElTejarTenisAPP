@@ -46,8 +46,16 @@
     </div>
   </div>
 
-  <div class="section">
-    <h3>Horario</h3>
+<div class="section">
+  <h3>Duración</h3>
+  <div id="duracionContainer">
+    <button class="duracion-btn seleccionado" onclick="seleccionarDuracion(60)">60 min</button>
+    <button class="duracion-btn" onclick="seleccionarDuracion(90)">90 min</button>
+  </div>
+</div>
+
+<div class="section" id="horarioSection" style="display:none;">
+  <h3>Horario</h3>
     <div id="horas" class="horas-grid"></div>
   </div>
 

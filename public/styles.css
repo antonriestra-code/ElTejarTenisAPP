@@ -1,23 +1,29 @@
+/* ==================== FUENTE CONSISTENTE ==================== */
+body, input, select, button, textarea {
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* ==================== BODY Y FONDO ==================== */
 body {
   margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: url("fondo-pista.jpg") center/cover no-repeat fixed;
+  background: url("/fondo-pista.jpg") center/cover no-repeat fixed;
   color: white;
 }
 
 #login, #app {
-  position:relative;
-  z-index:1;
+  position: relative;
+  z-index: 1;
 }
 
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.4);
-  z-index:0;
-  pointer-events:none;   /* 👈 ESTO ES LA CLAVE */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 0;
+  pointer-events: none;
 }
 
+/* ==================== CARDS ==================== */
 .card {
   position: relative;
   z-index: 1;
@@ -39,6 +45,7 @@ body {
   margin-bottom: 10px;
 }
 
+/* ==================== INPUTS ==================== */
 input {
   width: 100%;
   padding: 10px;
@@ -47,12 +54,14 @@ input {
   border: none;
 }
 
+/* ==================== HEADER APP ==================== */
 header {
   display: flex;
   justify-content: space-between;
   padding: 20px 40px;
 }
 
+/* ==================== RESERVAS APP ==================== */
 .reserva-card {
   width: 900px;
   margin: 30px auto;
@@ -96,6 +105,20 @@ header {
   background: #2e6cff;
 }
 
+.duracion-btn {
+  padding: 10px 18px;
+  border-radius: 20px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.duracion-btn.seleccionado {
+  background: #3b82f6;
+}
+
 .horas-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -121,6 +144,7 @@ header {
   cursor: not-allowed;
 }
 
+/* ==================== BOTONES ==================== */
 .primary-btn {
   width: 100%;
   padding: 12px;
@@ -130,6 +154,11 @@ header {
   color: white;
   font-size: 15px;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.primary-btn:hover {
+  background: #1c4ed8;
 }
 
 .secondary-btn {
@@ -141,40 +170,129 @@ header {
   cursor: pointer;
 }
 
-.confirmar {
-  margin-top: 20px;
+.cancelar-btn {
+  background: #ff4d4d;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
 }
 
-
-.reserva-linea{
-  display:grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
-  align-items:center;
-  gap:10px;
-  background:rgba(255,255,255,0.08);
-  padding:10px 14px;
-  border-radius:8px;
-  margin-bottom:8px;
-  font-size:14px;
+.cancelar-btn:hover {
+  background: #e60000;
 }
 
-.res-fecha{
-  text-transform:capitalize;
+/* ==================== MIS RESERVAS ==================== */
+.reserva-linea {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.08);
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
-.res-hora{
-  font-weight:500;
+.res-fecha {
+  text-transform: capitalize;
 }
 
-.res-pista{
-  font-weight:600;
+.res-hora {
+  font-weight: 500;
 }
 
-.cancelar-btn{
-  background:#ff4d4d;
-  border:none;
-  padding:6px 12px;
-  border-radius:6px;
-  color:white;
-  cursor:pointer;
+.res-pista {
+  font-weight: 600;
+}
+
+/* ==================== ADMIN PANEL ==================== */
+.logo-admin {
+  width: 80px;
+  display: block;
+  margin: 0 auto 10px;
+}
+
+/* -------------------- TABS -------------------- */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  transition: background 0.2s;
+}
+
+.tab-btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.tab-btn.seleccionado {
+  background: #2e6cff;
+}
+
+/* -------------------- TAB CONTENT -------------------- */
+.tab-content input, .tab-content select {
+  margin: 5px 5px 5px 0;
+  padding: 6px;
+  border-radius: 6px;
+  border: none;
+  width: 150px;
+}
+
+.tab-content button {
+  margin-top: 5px;
+}
+
+/* -------------------- TABLAS ADMIN -------------------- */
+#tablaReservas, #tablaSocios, #tablaCursos, #tablaCampeonatos {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+.reserva-linea {
+  display: grid;
+   align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+}
+
+#tabReservas .tabla-encabezado,
+#tabReservas .reserva-linea {
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+}
+
+#tabSocios .tabla-encabezado,
+#tabSocios .reserva-linea {
+  grid-template-columns: 1fr 2fr auto;
+}
+
+#tabCursos .tabla-encabezado,
+#tabCursos .reserva-linea {
+  grid-template-columns: repeat(7, 1fr) auto;
+}
+
+.tabla-encabezado {
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+}
+
+.reserva-linea {
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+  margin-bottom: 6px;
 }
