@@ -1,298 +1,298 @@
-/* ==================== FUENTE CONSISTENTE ==================== */
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
 body, input, select, button, textarea {
-  font-family: 'Segoe UI', sans-serif;
+    font-family: 'Segoe UI', sans-serif;
 }
 
-/* ==================== BODY Y FONDO ==================== */
+/* =========================================================
+   FONDO
+========================================================= */
+
 body {
-  margin: 0;
-  background: url("/fondo-pista.jpg") center/cover no-repeat fixed;
-  color: white;
-}
-
-#login, #app {
-  position: relative;
-  z-index: 1;
+    background: url("/fondo-pista.jpg") center/cover no-repeat fixed;
+    color: white;
 }
 
 .overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  z-index: 0;
-  pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 0;
+    pointer-events: none;
 }
 
-/* ==================== CARDS ==================== */
+/* =========================================================
+   CARD BASE
+========================================================= */
+
 .card {
-  position: relative;
-  z-index: 1;
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(12px);
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    position: relative;
+    z-index: 1;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
 }
+
+/* =========================================================
+   LOGIN
+========================================================= */
 
 .login-card {
-  width: 350px;
-  margin: 120px auto;
-  text-align: center;
+    width: 350px;
+    max-width: 90%;
+    margin: 120px auto;
+    text-align: center;
 }
 
 .logo {
-  width: 90px;
-  margin-bottom: 10px;
+    width: 90px;
+    margin-bottom: 10px;
 }
 
-/* ==================== INPUTS ==================== */
 input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 8px;
-  border: none;
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: none;
 }
 
-/* ==================== HEADER APP ==================== */
+/* =========================================================
+   HEADER
+========================================================= */
+
 header {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-/* ==================== RESERVAS APP ==================== */
+/* =========================================================
+   CONTENEDOR PRINCIPAL
+========================================================= */
+
 .reserva-card {
-  width: 900px;
-  margin: 30px auto;
+    width: 900px;
+    max-width: 95%;
+    margin: 30px auto;
 }
 
 .section {
-  margin-bottom: 25px;
+    margin-bottom: 25px;
 }
 
-.fechas-grid {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+/* =========================================================
+   FECHAS
+========================================================= */
+
+#fechas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+    gap: 10px;
 }
 
 .fecha-btn {
-  width: 70px;
-  height: 90px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  background: rgba(255,255,255,0.1);
-  color: white;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    background: rgba(255,255,255,0.12);
+    color: white;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 14px;
+    min-height: 70px;
+    transition: 0.2s;
+}
+
+.fecha-btn:hover {
+    background: rgba(255,255,255,0.22);
 }
 
 .fecha-btn.seleccionado {
-  background: #2e6cff;
+    background: #2e6cff;
 }
 
-.pistas button {
-  padding: 10px 25px;
-  border-radius: 25px;
-  border: none;
-  margin-right: 10px;
-  cursor: pointer;
-  background: rgba(255,255,255,0.1);
-  color: white;
+/* =========================================================
+   PISTAS Y DURACIÓN
+========================================================= */
+
+#pistas,
+#duraciones {
+    display: flex;
+    gap: 12px;
 }
 
-.pistas button.seleccionado {
-  background: #2e6cff;
-}
-
+.pista-btn,
 .duracion-btn {
-  padding: 10px 18px;
-  border-radius: 20px;
-  border: none;
-  background: rgba(255,255,255,0.1);
-  color: white;
-  cursor: pointer;
-  margin-right: 10px;
+    flex: 1;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    padding: 14px;
+    font-size: 15px;
+    transition: all 0.2s ease;
 }
 
+.pista-btn:hover,
+.duracion-btn:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+.pista-btn.seleccionado,
 .duracion-btn.seleccionado {
-  background: #3b82f6;
+    background: #2e6cff;
 }
 
-.horas-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 10px;
+/* =========================================================
+   HORAS
+========================================================= */
+
+#horas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+    gap: 10px;
 }
 
 .hora-btn {
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background: rgba(255,255,255,0.1);
-  color: white;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    background: rgba(255,255,255,0.12);
+    color: white;
+    padding: 10px;
+    transition: 0.2s;
+}
+
+.hora-btn:hover {
+    background: rgba(255,255,255,0.22);
 }
 
 .hora-btn.seleccionado {
-  background: #2e6cff;
+    background: #2e6cff;
 }
 
 .hora-btn.ocupado {
-  background: rgba(255,255,255,0.2);
-  opacity: 0.4;
-  cursor: not-allowed;
+    opacity: 0.35;
+    cursor: not-allowed;
 }
 
-/* ==================== BOTONES ==================== */
+/* =========================================================
+   BOTONES
+========================================================= */
+
 .primary-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  background: #2e6cff;
-  color: white;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.2s;
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+    background: #2e6cff;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
 .primary-btn:hover {
-  background: #1c4ed8;
+    background: #1f4fd8;
 }
 
 .secondary-btn {
-  background: transparent;
-  border: 1px solid white;
-  color: white;
-  padding: 8px 15px;
-  border-radius: 8px;
-  cursor: pointer;
+    background: transparent;
+    border: 1px solid white;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
 }
 
 .cancelar-btn {
-  background: #ff4d4d;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background 0.2s;
+    background: #ff4d4d;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
 }
 
-.cancelar-btn:hover {
-  background: #e60000;
-}
-
-/* ==================== MIS RESERVAS ==================== */
-.reserva-linea {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr auto;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255,255,255,0.08);
-  padding: 10px 14px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.res-fecha {
-  text-transform: capitalize;
-}
-
-.res-hora {
-  font-weight: 500;
-}
-
-.res-pista {
-  font-weight: 600;
-}
-
-/* ==================== ADMIN PANEL ==================== */
-.logo-admin {
-  width: 80px;
-  display: block;
-  margin: 0 auto 10px;
-}
-
-/* -------------------- TABS -------------------- */
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 15px;
-}
-
-.tab-btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  background: rgba(255,255,255,0.15);
-  color: white;
-  transition: background 0.2s;
-}
-
-.tab-btn:hover {
-  background: rgba(255,255,255,0.25);
-}
-
-.tab-btn.seleccionado {
-  background: #2e6cff;
-}
-
-/* -------------------- TAB CONTENT -------------------- */
-.tab-content input, .tab-content select {
-  margin: 5px 5px 5px 0;
-  padding: 6px;
-  border-radius: 6px;
-  border: none;
-  width: 150px;
-}
-
-.tab-content button {
-  margin-top: 5px;
-}
-
-/* -------------------- TABLAS ADMIN -------------------- */
-#tablaReservas, #tablaSocios, #tablaCursos, #tablaCampeonatos {
-  max-height: 400px;
-  overflow-y: auto;
-  margin-top: 10px;
-}
+/* =========================================================
+   MIS RESERVAS
+========================================================= */
 
 .reserva-linea {
-  display: grid;
-   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.08);
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
 }
 
-#tabReservas .tabla-encabezado,
-#tabReservas .reserva-linea {
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+    header {
+        padding: 15px 20px;
+    }
+
+    .reserva-card {
+        margin: 20px auto;
+    }
 }
 
-#tabSocios .tabla-encabezado,
-#tabSocios .reserva-linea {
-  grid-template-columns: 1fr 2fr auto;
-}
+@media (max-width: 600px) {
 
-#tabCursos .tabla-encabezado,
-#tabCursos .reserva-linea {
-  grid-template-columns: repeat(7, 1fr) auto;
-}
+    .login-card {
+        margin: 60px auto;
+    }
 
-.tabla-encabezado {
-  font-weight: bold;
-  border-bottom: 1px solid rgba(255,255,255,0.3);
-}
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
-.reserva-linea {
-  background: rgba(255,255,255,0.08);
-  border-radius: 6px;
-  margin-bottom: 6px;
+    #pistas,
+    #duraciones {
+        gap: 10px;
+    }
+
+    .pista-btn,
+    .duracion-btn {
+        font-size: 14px;
+        padding: 12px;
+    }
+
+    .reserva-linea {
+        grid-template-columns: 2fr 1fr 1fr auto;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .reserva-linea span:nth-child(4) {
+        display: none;
+    }
 }

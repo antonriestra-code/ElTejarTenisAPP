@@ -163,10 +163,18 @@ function seleccionarPista(p) {
 function seleccionarDuracion(minutos) {
   duracionSeleccionada = minutos;
   horaSeleccionada = null;
+
   document.querySelectorAll(".duracion-btn").forEach((b) =>
     b.classList.remove("seleccionado")
   );
-  event.target.classList.add("seleccionado");
+
+  const botones = document.querySelectorAll(".duracion-btn");
+  botones.forEach(btn => {
+    if (btn.textContent.includes(minutos)) {
+      btn.classList.add("seleccionado");
+    }
+  });
+
   generarHoras();
 }
 

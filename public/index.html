@@ -20,7 +20,6 @@
   <button class="primary-btn" onclick="login()">Acceder</button>
 </div>
 
-
 <!-- APP -->
 <div id="app" style="display:none;">
 
@@ -33,33 +32,37 @@
 
 <div class="card reserva-card">
 
+  <!-- FECHAS -->
   <div class="section">
     <h3>Selecciona fecha</h3>
-    <div id="fechas" class="fechas-grid"></div>
+    <div id="fechas"></div>
   </div>
 
+  <!-- PISTAS -->
   <div class="section">
     <h3>Pista</h3>
-    <div class="pistas">
-      <button id="btnTenis" onclick="seleccionarPista('Tenis')">Tenis</button>
-      <button id="btnPadel" onclick="seleccionarPista('Padel')">Pádel</button>
+    <div id="pistas">
+      <button id="btnTenis" class="pista-btn" onclick="seleccionarPista('Tenis')">Tenis</button>
+      <button id="btnPadel" class="pista-btn" onclick="seleccionarPista('Padel')">Pádel</button>
     </div>
   </div>
 
-<div class="section">
-  <h3>Duración</h3>
-  <div id="duracionContainer">
-    <button class="duracion-btn seleccionado" onclick="seleccionarDuracion(60)">60 min</button>
-    <button class="duracion-btn" onclick="seleccionarDuracion(90)">90 min</button>
-  </div>
-</div>
-
-<div class="section" id="horarioSection" style="display:none;">
-  <h3>Horario</h3>
-    <div id="horas" class="horas-grid"></div>
+  <!-- DURACIÓN -->
+  <div class="section">
+    <h3>Duración</h3>
+    <div id="duraciones">
+      <button class="duracion-btn seleccionado" onclick="seleccionarDuracion(60)">60 min</button>
+      <button class="duracion-btn" onclick="seleccionarDuracion(90)">90 min</button>
+    </div>
   </div>
 
-  <button class="primary-btn confirmar" onclick="confirmarReserva()">Confirmar reserva</button>
+  <!-- HORAS -->
+  <div class="section" id="horarioSection" style="display:none;">
+    <h3>Horario</h3>
+    <div id="horas"></div>
+  </div>
+
+  <button class="primary-btn" onclick="confirmarReserva()">Confirmar reserva</button>
 
   <!-- MIS RESERVAS -->
   <div class="mis-reservas">
@@ -68,7 +71,6 @@
   </div>
 
 </div>
-
 </div>
 
 <script src="app.js"></script>
