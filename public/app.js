@@ -1,29 +1,22 @@
-console.log("APP NUEVA CARGADA");
+console.log("APP JS COMPLETO CARGADO");
 
-let usuario = null; // email
-let usuarioNombre = null; // solo visual
+// ======================= VARIABLES =======================
+let usuario = null;          // email
+let usuarioNombre = null;    // solo visual
 let reservas = [];
 let fechaSeleccionada = null;
 let pistaSeleccionada = null;
 let horaSeleccionada = null;
-let duracionSeleccionada = 60;
-let limites = { maxReservas: 4, diasAnticipacion: 15 }; // valores por defecto
+let duracionSeleccionada = 60; // duración por defecto
+let limites = { maxReservas: 4, diasAnticipacion: 15 };
 
-/* ================= CARGAR LIMITES DESDE SUPABASE ================= */
-async function cargarLimites() {
-  try {
-    const res = await fetch("/api/limites");
-    if (res.ok) {
-      const data = await res.json();
-      limites.maxReservas = data.maxReservas;
-      limites.diasAnticipacion = data.diasAnticipacion;
-    }
-  } catch (e) {
-    console.error("No se pudieron cargar los límites", e);
-  }
+// ======================= UTILIDADES =======================
+function convertirHoraAMinutos(hora) {
+  const [h, m] = hora.split(":").map(Number);
+  return h * 60 + m;
 }
 
-/* ================= VER SOLAPE ENTRE HORAS ================= */
+// Comprueba solapamiento de horas
 function haySolapamiento(reservaExistente, nuevaFecha, nuevaPista, nuevaHora, nuevaDuracion) {
   if (reservaExistente.fecha !== nuevaFecha) return false;
   if (reservaExistente.pista !== nuevaPista) return false;
@@ -35,18 +28,11 @@ function haySolapamiento(reservaExistente, nuevaFecha, nuevaPista, nuevaHora, nu
   return inicioNueva < finExistente && finNueva > inicioExistente;
 }
 
-/* ================= HORAS A MINUTOS ================= */
-function convertirHoraAMinutos(hora) {
-  const [h, m] = hora.split(":").map(Number);
-  return h * 60 + m;
-}
-
-/* ================= LOGIN ================= */
+// ======================= LOGIN =======================
 async function login() {
-  await cargarLimites(); // cargamos límites antes
-
   const email = document.getElementById("email").value.trim();
   const passwordInput = document.getElementById("password");
+
   if (!email) return alert("Introduce correo");
 
   if (email === "admin@eltejar.com") {
@@ -55,7 +41,7 @@ async function login() {
     const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password: passwordInput.value }),
+      body: JSON.stringify({ email, password: passwordInput.value })
     });
     if (!res.ok) return alert("Contraseña incorrecta");
     window.location = "/admin.html";
@@ -64,36 +50,34 @@ async function login() {
 
   const res = await fetch("/api/socios");
   const socios = await res.json();
-  const socio = socios.find(
-    (s) => s.email.trim().toLowerCase() === email.toLowerCase()
-  );
+  const socio = socios.find(s => s.email.trim().toLowerCase() === email.toLowerCase());
   if (!socio) return alert("No autorizado");
 
   usuario = email.toLowerCase();
   usuarioNombre = socio.nombre;
+
   document.getElementById("login").style.display = "none";
   document.getElementById("app").style.display = "block";
-  document.getElementById("bienvenida").textContent =
-    "Hola, " +
-    usuarioNombre +
-    ". Este es el sistema de reservas del Club Deportivo El Tejar.";
+  renderBienvenida();
 
+  await cargarLimites();
   await cargarReservas();
 }
 
-/* ================= OCUPACIÓN ================= */
-document.addEventListener("DOMContentLoaded", () => {
-  const selector = document.getElementById("duracion");
-  if (selector) {
-    selector.addEventListener("change", (e) => {
-      duracionSeleccionada = parseInt(e.target.value);
-      horaSeleccionada = null;
-      generarHoras();
-    });
-  }
-});
+// ======================= MENSAJE BIENVENIDA =======================
+function renderBienvenida() {
+  const cont = document.getElementById("bienvenida");
+  if (!cont) return;
 
-/* ================= LOGOUT ================= */
+  const ancho = window.innerWidth;
+  if (ancho < 500) {
+    cont.textContent = `Hola, ${usuarioNombre}`;
+  } else {
+    cont.textContent = `Hola, ${usuarioNombre}. Este es el sistema de reservas del Club Deportivo El Tejar.`;
+  }
+}
+
+// ======================= LOGOUT =======================
 function logout() {
   usuario = null;
   usuarioNombre = null;
@@ -111,9 +95,21 @@ function logout() {
   document.getElementById("misReservas").innerHTML = "";
 }
 
-/* ================= CARGAR RESERVAS ================= */
+// ======================= CARGA DE LÍMITES =======================
+async function cargarLimites() {
+  try {
+    const res = await fetch("/api/limites");
+    if (!res.ok) throw new Error("No se pudieron cargar los límites");
+    const data = await res.json();
+    limites = data;
+    generarFechas(); // actualizar número de días que se muestran
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// ======================= CARGA RESERVAS =======================
 async function cargarReservas() {
-  await cargarLimites(); // aseguramos que los limites estén actualizados
   try {
     const res = await fetch("/api/reservas");
     reservas = res.ok ? await res.json() : [];
@@ -125,11 +121,15 @@ async function cargarReservas() {
   renderMisReservas();
 }
 
-/* ================= FECHAS ================= */
+// ======================= GENERAR FECHAS =======================
 function generarFechas() {
   const cont = document.getElementById("fechas");
+  if (!cont) return;
   cont.innerHTML = "";
-  for (let i = 0; i < limites.diasAnticipacion; i++) {
+
+  const dias = limites.diasAnticipacion || 15;
+
+  for (let i = 0; i < dias; i++) {
     const d = new Date();
     d.setDate(d.getDate() + i);
     const fecha = d.toISOString().split("T")[0];
@@ -139,9 +139,7 @@ function generarFechas() {
                      <strong>${d.getDate()}</strong><br>
                      <small>${d.toLocaleDateString("es-ES",{month:"short"})}</small>`;
     btn.onclick = () => {
-      document.querySelectorAll(".fecha-btn").forEach((b) =>
-        b.classList.remove("seleccionado")
-      );
+      document.querySelectorAll(".fecha-btn").forEach(b => b.classList.remove("seleccionado"));
       btn.classList.add("seleccionado");
       fechaSeleccionada = fecha;
       generarHoras();
@@ -150,7 +148,7 @@ function generarFechas() {
   }
 }
 
-/* ================= PISTAS ================= */
+// ======================= PISTA =======================
 function seleccionarPista(p) {
   pistaSeleccionada = p;
   document.getElementById("btnTenis").classList.remove("seleccionado");
@@ -159,26 +157,24 @@ function seleccionarPista(p) {
   generarHoras();
 }
 
-/* ================= DURACIÓN ================= */
+// ======================= DURACIÓN =======================
 function seleccionarDuracion(minutos) {
   duracionSeleccionada = minutos;
   horaSeleccionada = null;
-  document.querySelectorAll(".duracion-btn").forEach((b) =>
-    b.classList.remove("seleccionado")
-  );
+  document.querySelectorAll(".duracion-btn").forEach(b => b.classList.remove("seleccionado"));
   event.target.classList.add("seleccionado");
   generarHoras();
 }
 
-/* ================= HORAS ================= */
+// ======================= GENERAR HORAS =======================
 function generarHoras() {
   const cont = document.getElementById("horas");
   const section = document.getElementById("horarioSection");
   const selector = document.getElementById("duracion");
-  if (selector) {
-    duracionSeleccionada = parseInt(selector.value);
-  }
+  if (selector) duracionSeleccionada = parseInt(selector.value);
+
   cont.innerHTML = "";
+
   if (!fechaSeleccionada || !pistaSeleccionada || !duracionSeleccionada) {
     if (section) section.style.display = "none";
     return;
@@ -188,51 +184,47 @@ function generarHoras() {
   for (let minutos = 9 * 60; minutos <= 21 * 60; minutos += 30) {
     const inicio = minutos;
     const fin = minutos + duracionSeleccionada;
+
     if (fin > 22 * 60) continue;
     if (inicio < 17 * 60 && fin > 13 * 60) continue;
 
     const h = Math.floor(minutos / 60);
     const m = minutos % 60;
     const hora = (h < 10 ? "0" + h : h) + ":" + (m === 0 ? "00" : m);
+
     const btn = document.createElement("button");
     btn.className = "hora-btn";
     btn.textContent = hora;
 
-    const ocupada = reservas.find((r) =>
-      haySolapamiento(r, fechaSeleccionada, pistaSeleccionada, hora, duracionSeleccionada)
+    const ocupada = reservas.find(r =>
+      r.email && haySolapamiento(r, fechaSeleccionada, pistaSeleccionada, hora, duracionSeleccionada)
     );
+
     if (ocupada) {
       btn.classList.add("ocupado");
       btn.disabled = true;
     }
 
     btn.onclick = () => {
-      document.querySelectorAll(".hora-btn").forEach((b) =>
-        b.classList.remove("seleccionado")
-      );
+      document.querySelectorAll(".hora-btn").forEach(b => b.classList.remove("seleccionado"));
       btn.classList.add("seleccionado");
       horaSeleccionada = hora;
     };
+
     cont.appendChild(btn);
   }
 }
 
-/* ================= CONFIRMAR ================= */
+// ======================= CONFIRMAR RESERVA =======================
 async function confirmarReserva() {
   if (!fechaSeleccionada || !pistaSeleccionada || !horaSeleccionada)
     return alert("Selecciona fecha, pista y hora");
 
-  await cargarLimites(); // leemos limites actualizados
-
   const hoyStr = new Date().toISOString().split("T")[0];
-  const activas = reservas.filter(
-    (r) => r.email && r.email.trim().toLowerCase() === usuario && r.fecha >= hoyStr
-  );
+  const reservasFuturas = reservas.filter(r => r.fecha >= hoyStr && r.email === usuario);
 
-  if (activas.length >= limites.maxReservas) {
-    return alert(
-      `Has alcanzado el número máximo de ${limites.maxReservas} reservas activas para los próximos ${limites.diasAnticipacion} días.`
-    );
+  if (reservasFuturas.length >= limites.maxReservas) {
+    return alert(`Has alcanzado el número máximo de ${limites.maxReservas} reservas activas para los próximos ${limites.diasAnticipacion} días.`);
   }
 
   const res = await fetch("/api/reservas", {
@@ -243,75 +235,58 @@ async function confirmarReserva() {
       fecha: fechaSeleccionada,
       pista: pistaSeleccionada,
       hora: horaSeleccionada,
-      duracion: duracionSeleccionada,
-    }),
+      duracion: duracionSeleccionada
+    })
   });
 
   if (!res.ok) {
     const data = await res.json();
-    return alert(data.error || "Error al confirmar");
+    return alert(data.error || "Error al confirmar reserva");
   }
 
   const fechaObj = new Date(fechaSeleccionada);
-  const fechaBonita = fechaObj.toLocaleDateString("es-ES", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+  const fechaBonita = fechaObj.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
   const fechaFormateada = fechaBonita.charAt(0).toUpperCase() + fechaBonita.slice(1);
 
-  alert(
-    `Confirmada la reserva en la pista de ${pistaSeleccionada} para el ${fechaFormateada}, a las ${horaSeleccionada}. 
-    
-    Recuerde cancelarla si finalmente no pudiera asistir. 
-    
-    Gracias por utilizar el sistema de reservas del Club Deportivo El Tejar.`
-  );
-
-  await cargarReservas();
+  alert(`Confirmada la reserva en la pista de ${pistaSeleccionada} para el ${fechaFormateada}, a las ${horaSeleccionada}. Recuerde cancelarla si finalmente no pudiera asistir. Gracias por utilizar el sistema de reservas del Club Deportivo El Tejar.`);
 
   // Limpiamos selección
   fechaSeleccionada = null;
   pistaSeleccionada = null;
   horaSeleccionada = null;
-  document.querySelectorAll(".seleccionado").forEach((el) =>
-    el.classList.remove("seleccionado")
-  );
+  document.querySelectorAll(".seleccionado").forEach(el => el.classList.remove("seleccionado"));
+
+  await cargarReservas();
 }
 
-/* ================= MIS RESERVAS ================= */
+// ======================= RENDER MIS RESERVAS =======================
 function renderMisReservas() {
   const cont = document.getElementById("misReservas");
+  if (!cont) return;
   cont.innerHTML = "";
+
   if (!usuario) return;
 
   const hoyStr = new Date().toISOString().split("T")[0];
-  const mias = reservas.filter(
-    (r) => r.email && r.email.trim().toLowerCase() === usuario && r.fecha >= hoyStr
-  );
+  const mias = reservas.filter(r => r.email && r.email === usuario && r.fecha >= hoyStr);
 
   if (mias.length === 0) {
     cont.innerHTML = "<p>No tienes reservas activas.</p>";
     return;
   }
 
-  mias.forEach((r) => {
+  mias.forEach(r => {
     const fechaObj = new Date(r.fecha);
-    const fechaBonita = fechaObj.toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
+    const fechaBonita = fechaObj.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
     const fechaFormateada = fechaBonita.charAt(0).toUpperCase() + fechaBonita.slice(1);
 
     const row = document.createElement("div");
     row.className = "reserva-linea";
     row.innerHTML = `<span>${fechaFormateada}</span>
                      <span>${r.hora}</span>
-                     <span>${r.pista}</span>
+                     <span>${r.pista === "Padel" ? "P" : "T"}</span>
                      <span>${r.duracion} min</span>
                      <button class="cancelar-btn">Cancelar</button>`;
-
     row.querySelector("button").onclick = async () => {
       await fetch("/api/reservas/" + r.id, { method: "DELETE" });
       await cargarReservas();
@@ -320,8 +295,24 @@ function renderMisReservas() {
   });
 }
 
+// ======================= DOM READY =======================
+document.addEventListener("DOMContentLoaded", () => {
+  const selector = document.getElementById("duracion");
+  if (selector) {
+    selector.addEventListener("change", e => {
+      duracionSeleccionada = parseInt(e.target.value);
+      horaSeleccionada = null;
+      generarHoras();
+    });
+  }
+
+  window.addEventListener("resize", renderBienvenida);
+});
+
+// ======================= EXPORTS =======================
 window.login = login;
 window.logout = logout;
 window.seleccionarPista = seleccionarPista;
-window.confirmarReserva = confirmarReserva;
 window.seleccionarDuracion = seleccionarDuracion;
+window.confirmarReserva = confirmarReserva;
+
