@@ -1,145 +1,252 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<title>Panel Admin - Club El Tejar</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin - Club El Tejar</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-<div class="overlay"></div>
-<div class="card">
-  <!-- HEADER -->
-  <header class="admin-header">
-    <h1>Panel de Administración</h1>
-    <div>
-      <button onclick="exportarCSV()" class="secondary-btn">Descargar CSV</button>
-      <button onclick="logoutAdmin()" class="secondary-btn">Cerrar sesión</button>
+
+  <div class="overlay"></div>
+
+  <div class="card">
+
+    <!-- HEADER -->
+    <header class="admin-header">
+      <h1>Panel de Administración</h1>
+      <button onclick="logoutAdmin()" class="secondary-btn btn-logout-header">Cerrar sesión</button>
+    </header>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn seleccionado" data-tab="tabReservas">Reservas</button>
+      <button class="tab-btn" data-tab="tabEspeciales">Reservas Especiales</button>
+      <button class="tab-btn" data-tab="tabSocios">Socios</button>
+      <button class="tab-btn" data-tab="tabCursos">Cursos</button>
+      <button class="tab-btn" data-tab="tabCampeonatos">Campeonatos</button>
+      <button class="tab-btn" data-tab="tabLimites">Límites</button>
     </div>
-  </header>
 
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab-btn seleccionado" data-tab="tabReservas">Reservas</button>
-    <button class="tab-btn" data-tab="tabEspeciales">Reservas Especiales</button>
-    <button class="tab-btn" data-tab="tabSocios">Socios</button>
-    <button class="tab-btn" data-tab="tabCursos">Cursos</button>
-    <button class="tab-btn" data-tab="tabCampeonatos">Campeonatos</button>
-    <button class="tab-btn" data-tab="tabLimites">Límites</button>
-  </div>
-
-  <!-- ================= RESERVAS ================= -->
-  <div id="tabReservas" class="tab-content">
-    <h3>Reservas</h3>
-    <input type="date" id="filtroFechaReserva">
-    <button onclick="cargarReservasAdmin()">Filtrar</button>
-    <div class="tabla-encabezado">
-      <span>Email</span>
-      <span>Fecha</span>
-      <span>Hora</span>
-      <span>Pista</span>
-      <span>Duración</span>
-      <span>Eliminar</span>
+    <div id="tabReservas" class="tab-content">
+      <div class="header-seccion">
+        <h3>Reservas</h3>
+        <button onclick="exportarCSV('reservas')" class="secondary-btn btn-csv-contextual">Descargar CSV</button>
+      </div>
+      <div class="filtro-reservas">
+        <input type="date" id="filtroFechaReserva">
+        <button class="primary-btn btn-filtrar-admin" onclick="cargarReservasAdmin()">Filtrar</button>
+      </div>
+      <div class="tabla-encabezado">
+        <span>Email</span>
+        <span>Fecha</span>
+        <span>Hora</span>
+        <span>Pista</span>
+        <span>Duración</span>
+        <span>Eliminar</span>
+      </div>
+      <div id="tablaReservas"></div>
     </div>
-    <div id="tablaReservas"></div>
-  </div>
 
-  <!-- ================= RESERVAS ESPECIALES ================= -->
-  <div id="tabEspeciales" class="tab-content" style="display:none;">
-    <h3>Reservas Especiales</h3>
-    <h4>Puntual</h4>
-    <input type="date" id="espFecha">
-    <select id="espHora"></select>
-    <select id="espPista">
-      <option value="Tenis">Tenis</option>
-      <option value="Padel">Pádel</option>
-    </select>
-    <select id="espDuracion">
-      <option value="60">60 min</option>
-      <option value="90">90 min</option>
-    </select>
-    <button class="primary-btn" onclick="crearEspecialPuntual()">Crear puntual</button>
-    <hr>
-    <h4>Recurrente</h4>
-    <label>Día semana</label>
-    <select id="espDiaSemana">
-      <option value="0">Domingo</option>
-      <option value="1">Lunes</option>
-      <option value="2">Martes</option>
-      <option value="3">Miércoles</option>
-      <option value="4">Jueves</option>
-      <option value="5">Viernes</option>
-      <option value="6">Sábado</option>
-    </select>
-    <label>Desde</label><input type="date" id="espDesde">
-    <label>Hasta</label><input type="date" id="espHasta">
-    <select id="espHoraRec"></select>
-    <select id="espPistaRec">
-      <option value="Tenis">Tenis</option>
-      <option value="Padel">Pádel</option>
-    </select>
-    <select id="espDuracionRec">
-      <option value="60">60 min</option>
-      <option value="90">90 min</option>
-    </select>
-    <button class="primary-btn" onclick="crearEspecialRecurrente()">Crear recurrente</button>
-  </div>
+    <!-- ================= RESERVAS ESPECIALES ================= -->
+    <div id="tabEspeciales" class="tab-content" style="display:none;">
+      <h3>Reservas Especiales</h3>
 
-  <!-- ================= SOCIOS ================= -->
-  <div id="tabSocios" class="tab-content" style="display:none;">
-    <h3>Socios</h3>
-    <input type="email" id="nuevoEmail" placeholder="Correo electrónico">
-    <input type="text" id="nuevoNombre" placeholder="Nombre">
-    <button class="primary-btn" onclick="crearSocio()">Agregar socio</button>
-    <div class="tabla-encabezado">
-      <span>Nombre</span>
-      <span>Email</span>
-      <span>Eliminar</span>
+      <h4>Puntual</h4>
+      <div class="reserva-especial">
+        <input type="date" id="espFecha">
+        <select id="espHora"></select>
+        <select id="espPista">
+          <option value="Tenis">Tenis</option>
+          <option value="Padel">Pádel</option>
+        </select>
+        <select id="espDuracion">
+          <option value="60">60 min</option>
+          <option value="90">90 min</option>
+        </select>
+        <button class="primary-btn" onclick="crearEspecialPuntual()">Crear puntual</button>
+      </div>
+
+      <hr>
+
+      <h4>Recurrente</h4>
+      <div class="reserva-especial">
+        <label>Día semana</label>
+        <select id="espDiaSemana">
+          <option value="0">Domingo</option>
+          <option value="1">Lunes</option>
+          <option value="2">Martes</option>
+          <option value="3">Miércoles</option>
+          <option value="4">Jueves</option>
+          <option value="5">Viernes</option>
+          <option value="6">Sábado</option>
+        </select>
+
+        <label>Desde</label>
+        <input type="date" id="espDesde">
+
+        <label>Hasta</label>
+        <input type="date" id="espHasta">
+
+        <select id="espHoraRec"></select>
+
+        <select id="espPistaRec">
+          <option value="Tenis">Tenis</option>
+          <option value="Padel">Pádel</option>
+        </select>
+
+        <select id="espDuracionRec">
+          <option value="60">60 min</option>
+          <option value="90">90 min</option>
+        </select>
+
+        <button class="primary-btn" onclick="crearEspecialRecurrente()">Crear recurrente</button>
+      </div>
     </div>
-    <div id="tablaSocios"></div>
-  </div>
 
-  <!-- ================= CURSOS ================= -->
-  <div id="tabCursos" class="tab-content" style="display:none;">
-    <h3>Cursos</h3>
-    <input type="text" id="cursoNombre" placeholder="Nombre">
-    <input type="text" id="cursoDescripcion" placeholder="Descripción">
-    <input type="date" id="cursoInicio">
-    <input type="date" id="cursoFin">
-    <input type="number" id="cursoPrecio" placeholder="Precio">
-    <input type="text" id="cursoProfesor" placeholder="Profesor">
-    <input type="text" id="cursoTelefono" placeholder="Teléfono">
-    <button class="primary-btn" onclick="crearCurso()">Crear curso</button>
-    <div class="tabla-encabezado">
-      <span>Nombre</span>
-      <span>Descripción</span>
-      <span>Inicio</span>
-      <span>Fin</span>
-      <span>Precio</span>
-      <span>Profesor</span>
-      <span>Teléfono</span>
-      <span>Eliminar</span>
+    <!-- ================= SOCIOS ================= -->
+    <div id="tabSocios" class="tab-content" style="display:none;">
+      <h3>Socios</h3>
+      <div class="nuevo-socio">
+        <input type="email" id="nuevoEmail" placeholder="Correo electrónico">
+        <input type="text" id="nuevoNombre" placeholder="Nombre">
+        <button class="primary-btn" onclick="crearSocio()">Agregar socio</button>
+      </div>
+      <div class="tabla-encabezado">
+        <span>Nombre</span>
+        <span>Email</span>
+        <span>Eliminar</span>
+      </div>
+      <div id="tablaSocios"></div>
     </div>
-    <div id="tablaCursos"></div>
+
+    <div id="tabCursos" class="tab-content" style="display:none;">
+      <div class="header-seccion">
+        <h3>➕ Crear curso</h3>
+        <button onclick="exportarCSV('cursos')" class="secondary-btn btn-csv-contextual">Descargar CSV</button>
+      </div>
+
+      <div class="nuevo-curso form-grid">
+        <div class="input-group"><label>Curso</label><input type="text" id="cursoNombre"
+            placeholder="Nombre: Ej. Tenis Adultos"></div>
+        <div class="input-group"><label>Descripción</label><input type="text" id="cursoDescripcion"
+            placeholder="Descripción corta"></div>
+        <div class="input-group"><label>Precio</label><input type="text" id="cursoPrecio" placeholder="Precio: Ej. 40€">
+        </div>
+        <div class="input-group"><label>Inicio</label><input type="date" id="cursoInicio"></div>
+        <div class="input-group"><label>Fin</label><input type="date" id="cursoFin"></div>
+        <div class="input-group"><label>Profesor</label><input type="text" id="cursoProfesor" placeholder="Profesor">
+        </div>
+        <div class="input-group"><label>Teléfono</label><input type="text" id="cursoTelefono" placeholder="Teléfono">
+        </div>
+        <div class="input-group"><label>Plazas</label><input type="number" id="cursoPlazas" placeholder="Plazas"
+            min="1"></div>
+        <div class="input-group btn-group-form">
+          <label>&nbsp;</label>
+          <button class="primary-btn btn-destacado" onclick="crearCurso()">Crear curso</button>
+        </div>
+      </div>
+
+      <hr>
+
+      <h3>📋 Cursos existentes</h3>
+      <div class="tabla-encabezado">
+        <span>Nombre</span>
+        <span class="mobile-hide">Descripción</span>
+        <span class="mobile-hide">Inicio</span>
+        <span class="mobile-hide">Fin</span>
+        <span class="mobile-hide">Precio</span>
+        <span class="mobile-hide">Profesor</span>
+        <span class="mobile-hide">Teléfono</span>
+        <span>Plazas</span>
+        <span>Acciones</span>
+      </div>
+      <div id="tablaCursos"></div>
+    </div>
+
+    <div id="tabCampeonatos" class="tab-content" style="display:none;">
+      <div class="header-seccion">
+        <h3>➕ Crear torneo</h3>
+        <button onclick="exportarCSV('torneos')" class="secondary-btn btn-csv-contextual">Descargar CSV</button>
+      </div>
+      <div class="nuevo-curso form-grid">
+        <div class="input-group"><label>Torneo</label><input type="text" id="torneoNombre" placeholder="Nombre Torneo">
+        </div>
+        <div class="input-group"><label>Descripción</label><input type="text" id="torneoDescripcion"
+            placeholder="Categorías, etc."></div>
+        <div class="input-group"><label>Precio</label><input type="text" id="torneoPrecio" placeholder="Precio"></div>
+        <div class="input-group"><label>Inicio</label><input type="date" id="torneoInicio"></div>
+        <div class="input-group"><label>Fin</label><input type="date" id="torneoFin"></div>
+        <div class="input-group">
+          <label>Deporte</label>
+          <select id="torneoDeporte">
+            <option value="Tenis">Tenis</option>
+            <option value="Padel">Pádel</option>
+            <option value="Ambos">Ambos</option>
+          </select>
+        </div>
+        <div class="input-group"><label>Categoría</label><input type="text" id="torneoCategoria"
+            placeholder="Categoría (Ej: Absoluta)"></div>
+        <div class="input-group"><label>Plazas</label><input type="number" id="torneoPlazas" placeholder="Plazas"
+            min="1"></div>
+        <div class="input-group btn-group-form">
+          <label>&nbsp;</label>
+          <button class="primary-btn btn-destacado" onclick="crearTorneo()">Crear torneo</button>
+        </div>
+      </div>
+
+      <hr>
+
+      <h3>📋 Torneos existentes</h3>
+      <div class="tabla-encabezado">
+        <span>Nombre</span>
+        <span class="mobile-hide">Deporte</span>
+        <span class="mobile-hide">Categoría</span>
+        <span class="mobile-hide">Inicio</span>
+        <span class="mobile-hide">Fin</span>
+        <span>Plazas</span>
+        <span>Acciones</span>
+      </div>
+      <div id="tablaTorneos"></div>
+
+    </div>
+
+    <!-- Sección dinámica de inscritos (común para Cursos y Torneos, fuera de los tabs) -->
+    <div id="seccionInscritosDinamica"
+      style="display:none; margin-top:30px; border-top: 2px solid rgba(255,255,255,0.1); padding-top:20px;">
+      <div class="header-seccion">
+        <h4 id="tituloInscritosDinamico"></h4>
+        <button onclick="document.getElementById('seccionInscritosDinamica').style.display='none'"
+          class="secondary-btn">Cerrar</button>
+      </div>
+      <div class="tabla-encabezado">
+        <span>Email</span>
+        <span>Participante</span>
+        <span>Estado</span>
+        <span class="col-progreso">Progreso</span>
+        <span>Acciones</span>
+      </div>
+      <div id="listaInscritosDinamica"></div>
+    </div>
+
+    <!-- ================= LIMITES ================= -->
+    <div id="tabLimites" class="tab-content" style="display:none;">
+      <h3>Límites de reservas</h3>
+
+      <label>Número máximo de reservas:</label>
+      <input type="number" id="maxReservasInput" min="1">
+
+      <label>Días de anticipación:</label>
+      <input type="number" id="diasAntInput" min="1">
+
+      <button class="primary-btn" onclick="actualizarLimites()">Actualizar límites</button>
+    </div>
+
   </div>
 
-  <!-- ================= CAMPEONATOS ================= -->
-  <div id="tabCampeonatos" class="tab-content" style="display:none;">
-    <h3>Campeonatos</h3>
-    <p>Próximamente...</p>
-  </div>
-
-  <!-- ================= LIMITES ================= -->
-  <div id="tabLimites" class="tab-content" style="display:none;">
-    <h3>Límites de reservas</h3>
-    <label>Número máximo de reservas:</label>
-    <input type="number" id="maxReservasInput" min="1">
-    <label>Días de anticipación:</label>
-    <input type="number" id="diasAntInput" min="1">
-    <button class="primary-btn" onclick="actualizarLimites()">Actualizar límites</button>
-  </div>
-
-</div>
-
-<script src="admin.js"></script>
+  <script src="admin.js"></script>
 </body>
+
 </html>

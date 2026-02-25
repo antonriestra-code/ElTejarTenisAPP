@@ -6,17 +6,22 @@
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
 }
 
-body, input, select, button, textarea {
+body,
+input,
+select,
+button,
+textarea {
     font-family: 'Segoe UI', sans-serif;
 }
 
 /* =========================================================
-   FONDO
+   FONDO + OVERLAY
 ========================================================= */
 
 body {
@@ -27,7 +32,7 @@ body {
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.45);
+    background: rgba(0, 0, 0, 0.45);
     z-index: 0;
     pointer-events: none;
 }
@@ -39,11 +44,11 @@ body {
 .card {
     position: relative;
     z-index: 1;
-    background: rgba(255,255,255,0.08);
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(12px);
     border-radius: 16px;
     padding: 30px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
 /* =========================================================
@@ -71,16 +76,51 @@ input {
 }
 
 /* =========================================================
-   HEADER
+   HEADER (CORREGIDO)
 ========================================================= */
 
 header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    padding: 20px 40px;
-    flex-wrap: wrap;
-    gap: 10px;
+    padding: 20px;
+    gap: 12px;
+}
+
+/* Saludo centrado */
+#bienvenida {
+    text-align: center;
+    width: 100%;
+}
+
+/* Botones ocupando todo el ancho */
+.menu-buttons {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+}
+
+.menu-btn,
+.logout-btn {
+    flex: 1;
+    padding: 10px 0;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.menu-btn:hover,
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.logout-btn {
+    border: 2px solid white;
+    background: transparent;
 }
 
 /* =========================================================
@@ -111,7 +151,7 @@ header {
     border-radius: 12px;
     border: none;
     cursor: pointer;
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
     color: white;
     padding: 12px 8px;
     text-align: center;
@@ -121,7 +161,7 @@ header {
 }
 
 .fecha-btn:hover {
-    background: rgba(255,255,255,0.22);
+    background: rgba(255, 255, 255, 0.22);
 }
 
 .fecha-btn.seleccionado {
@@ -144,7 +184,7 @@ header {
     border-radius: 12px;
     border: none;
     cursor: pointer;
-    background: rgba(255,255,255,0.15);
+    background: rgba(255, 255, 255, 0.15);
     color: white;
     padding: 14px;
     font-size: 15px;
@@ -153,7 +193,7 @@ header {
 
 .pista-btn:hover,
 .duracion-btn:hover {
-    background: rgba(255,255,255,0.25);
+    background: rgba(255, 255, 255, 0.25);
 }
 
 .pista-btn.seleccionado,
@@ -175,14 +215,14 @@ header {
     border-radius: 10px;
     border: none;
     cursor: pointer;
-    background: rgba(255,255,255,0.12);
+    background: rgba(255, 255, 255, 0.12);
     color: white;
     padding: 10px;
     transition: 0.2s;
 }
 
 .hora-btn:hover {
-    background: rgba(255,255,255,0.22);
+    background: rgba(255, 255, 255, 0.22);
 }
 
 .hora-btn.seleccionado {
@@ -214,85 +254,663 @@ header {
     background: #1f4fd8;
 }
 
-.secondary-btn {
-    background: transparent;
-    border: 1px solid white;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
 .cancelar-btn {
     background: #ff4d4d;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   BOTONES DE ACCIÓN EN FILAS (Cancelar / OK / Espera)
+   Tamaño único y consistente para reservas y cursos
+========================================================= */
+
+.cancelar-btn,
+.btn-estado {
     border: none;
     padding: 6px 10px;
     border-radius: 6px;
     color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    min-width: 64px;
+    text-align: center;
+    justify-self: end;
+}
+
+.cancelar-btn {
+    background: #ff4d4d;
+}
+
+.cancelar-btn:hover {
+    background: #cc2e2e;
+}
+
+.btn-estado.ok {
+    background: #28a745;
+}
+
+.btn-estado.ok:hover {
+    background: #1e7e34;
+}
+
+.btn-estado.espera {
+    background: #e6a800;
+    color: #fff;
+}
+
+.btn-estado.espera:hover {
+    background: #b38500;
+}
+
+.btn-estado.out {
+    background: #ff4d4d;
+    color: #fff;
+}
+
+.btn-estado.out:hover {
+    background: #cc2e2e;
+}
+
+/* =========================================================
+   MIS RESERVAS — grid 4 columnas
+   [Pista | Fecha bonita (crece) | Hora | Btn Cancelar]
+========================================================= */
+
+.mis-reservas-lista .lista-fila {
+    display: grid;
+    grid-template-columns: 120px 2.5fr 1.5fr 70px 90px;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(4px);
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Col 1 — Pista: negrita, corta */
+.mis-reservas-lista .lista-fila .col-pista {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Col 2 — Fecha bonita: crece, texto largo con elipsis */
+.mis-reservas-lista .lista-fila .col-fecha {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    opacity: 0.9;
+    text-align: left;
+}
+
+/* Col 3 — Hora: centrada */
+.mis-reservas-lista .lista-fila .col-hora {
+    text-align: center;
+    font-weight: 600;
+}
+
+/* =========================================================
+   MIS CURSOS — grid 4 columnas
+   [Detalle | Descripción (crece) | Fecha fin | Btn OK/Espera]
+========================================================= */
+
+.mis-cursos-lista .lista-fila {
+    display: grid;
+    grid-template-columns: 120px 2.5fr 1.5fr 70px 90px;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(4px);
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Col 1 — Detalle (nombre participante): corto, negrita */
+.mis-cursos-lista .lista-fila .col-detalle {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Col 2 — Descripción: crece, elipsis */
+.mis-cursos-lista .lista-fila .col-descripcion {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    opacity: 0.9;
+    text-align: left;
+}
+
+/* Col 3 — Fecha fin: centrada */
+.mis-cursos-lista .lista-fila .col-fechafin,
+.mis-torneos-lista .lista-fila .col-fechafin {
+    text-align: center;
     font-size: 12px;
+    opacity: 0.85;
+}
+
+/* Base Torneos */
+.mis-torneos-lista .lista-fila {
+    display: grid;
+    grid-template-columns: 120px 2.5fr 1.5fr 70px 90px;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(4px);
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Col Extra — Duración/Profesor/Categoría */
+.col-extra {
+    text-align: center;
+    font-size: 12px;
+    opacity: 0.8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Barra de Scroll Personalizada */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+/* Header Admin */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
+}
+
+.btn-logout-header {
+    background: rgba(255, 77, 77, 0.15);
+    border: 1px solid rgba(255, 77, 77, 0.3);
+    color: #ff4d4d;
+    padding: 8px 15px;
+    font-size: 13px;
+}
+
+.btn-logout-header:hover {
+    background: #ff4d4d;
+    color: white;
+}
+
+/* Layout de Formularios */
+.header-seccion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    /* Reducido de 20px */
+    background: rgba(255, 255, 255, 0.04);
+    padding: 15px 25px;
+    /* Reducido vertical de 25px */
+    border-radius: 12px;
+    align-items: end;
+}
+
+.form-grid .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    /* Reducido de 8px */
+}
+
+.form-grid .input-group label {
+    font-size: 11px;
+    /* Un poco más pequeño */
+    font-weight: 600;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.5px;
+}
+
+/* Indicadores de Disponibilidad (Tags) */
+.cupo-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.cupo-tag.verde {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.cupo-tag.amarillo {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.cupo-tag.rojo {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* Unificación de tamaños para inputs, select y date */
+.form-grid input,
+.form-grid select,
+.form-grid .primary-btn {
+    height: 45px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    padding: 0 15px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.form-grid input:focus,
+.form-grid select:focus {
+    outline: none;
+    border-color: #2e6cff;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.form-grid .primary-btn {
+    margin-top: 0;
+    /* Ya alineado por el grid */
+    font-weight: 600;
     cursor: pointer;
 }
 
-/* =========================================================
-   MIS RESERVAS
-========================================================= */
+.btn-destacado {
+    border: 2px solid #2e6cff !important;
+    color: #2e6cff !important;
+    font-weight: 800 !important;
+    background: rgba(46, 108, 255, 0.1) !important;
+}
 
-.reserva-linea {
+.btn-destacado:hover {
+    background: #2e6cff !important;
+    color: white !important;
+}
+
+.form-grid .btn-group-form button {
+    margin-bottom: 0px;
+}
+
+/* Responsividad Formularios */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .form-grid .primary-btn {
+        grid-column: span 1;
+    }
+}
+
+/* Grids Específicos Tablas Admin */
+#tablaCursos .tabla-encabezado,
+#tablaCursos .reserva-linea {
+    grid-template-columns: 2fr 1fr 100px;
+    /* Simplificado base */
+}
+
+@media (min-width: 769px) {
+
+    #tablaCursos .tabla-encabezado,
+    #tablaCursos .reserva-linea {
+        grid-template-columns: 1.5fr 2fr 100px 100px 80px 100px 100px 70px 110px;
+    }
+}
+
+#tablaTorneos .tabla-encabezado,
+#tablaTorneos .reserva-linea {
+    grid-template-columns: 2fr 100px 100px;
+}
+
+@media (min-width: 769px) {
+
+    #tablaTorneos .tabla-encabezado,
+    #tablaTorneos .reserva-linea {
+        grid-template-columns: 1.5fr 1fr 1fr 100px 100px 80px 110px;
+    }
+}
+
+#tablaSocios .tabla-encabezado,
+#tablaSocios .reserva-linea {
+    grid-template-columns: 1fr 1.5fr 100px;
+}
+
+
+#listaInscritosDinamica {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+#listaInscritosDinamica .lista-fila {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    grid-template-columns: 1.5fr 1fr 100px 120px 100px;
     align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+}
+
+#listaInscritosDinamica .lista-fila:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(4px);
+}
+
+.acciones-linea {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.btn-mini {
+    padding: 6px !important;
+    min-width: 35px;
+    height: 35px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px !important;
+}
+
+.tab-content .tabla-encabezado,
+.tab-content .reserva-linea {
+    display: grid;
+    grid-template-columns: 1fr 100px 80px 100px 100px 100px;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 15px;
+}
+
+/* Pestañas Admin */
+.tabs {
+    display: flex;
     gap: 10px;
-    background: rgba(255,255,255,0.08);
-    padding: 10px 14px;
-    border-radius: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 5px;
+    overflow-x: auto;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-radius: 8px 8px 0 0;
+    white-space: nowrap;
+}
+
+.tab-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.seleccionado {
+    color: white;
+    background: rgba(46, 108, 255, 0.2);
+    border-bottom: 3px solid #2e6cff;
+}
+
+.tab-content .tabla-encabezado {
+    background: rgba(255, 255, 255, 0.1);
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 2px;
+}
+
+.tab-content .reserva-linea {
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     font-size: 14px;
+    transition: background 0.2s;
+}
+
+.tab-content .reserva-linea:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.tab-content .reserva-linea.conflictiva {
+    background: rgba(255, 77, 77, 0.25) !important;
+    border-left: 4px solid #ff4d4d;
+}
+
+.tab-content .reserva-linea span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Grids específicos por tabla admin */
+#tabReservas .tabla-encabezado,
+#tabReservas .reserva-linea {
+    grid-template-columns: 1.2fr 100px 70px 100px 90px 100px;
+}
+
+#tabSocios .tabla-encabezado,
+#tabSocios .reserva-linea {
+    grid-template-columns: 1.2fr 1.5fr 100px;
+}
+
+#tabCursos .tabla-encabezado,
+#tabCursos .reserva-linea {
+    grid-template-columns: 140px 1.5fr 90px 90px 80px 100px 100px 65px 120px;
+}
+
+#tabCampeonatos .tabla-encabezado,
+#tabCampeonatos .reserva-linea {
+    grid-template-columns: 140px 80px 100px 90px 90px 65px 100px 100px;
+}
+
+#seccionInscritosDinamica .tabla-encabezado,
+#seccionInscritosDinamica .reserva-linea {
+    grid-template-columns: 1.5fr 1fr 90px 110px 100px;
+}
+
+@media (max-width: 768px) {
+
+    #seccionInscritosDinamica .tabla-encabezado,
+    #seccionInscritosDinamica .reserva-linea {
+        grid-template-columns: 1fr 1fr 80px;
+        font-size: 12px;
+    }
+
+    #seccionInscritosDinamica .col-progreso,
+    #seccionInscritosDinamica .tabla-encabezado span:nth-child(2) {
+        display: none;
+    }
+}
+
+#seccionInscritosDinamica.es-curso .col-progreso,
+#seccionInscritosDinamica.es-curso .reserva-linea .col-progreso {
+    display: none;
+}
+
+#seccionInscritosDinamica.es-curso .tabla-encabezado,
+#seccionInscritosDinamica.es-curso .reserva-linea {
+    grid-template-columns: 1.2fr 1.5fr 100px 90px;
+}
+
+@media (max-width: 768px) {
+
+    #seccionInscritosDinamica.es-curso .tabla-encabezado,
+    #seccionInscritosDinamica.es-curso .reserva-linea {
+        grid-template-columns: 1fr 90px 80px;
+    }
 }
 
 /* =========================================================
-   RESPONSIVE
+   CURSOS (sección cursos completos, tarjetas)
 ========================================================= */
 
-@media (max-width: 900px) {
+.curso-item {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
 
-    header {
-        padding: 15px 20px;
+/* =========================================================
+   RESPONSIVE — pequeños ajustes en móvil
+   El grid ya es responsive por la columna 1fr, solo ajustamos
+   el tamaño de fuente en pantallas muy pequeñas
+========================================================= */
+
+@media (max-width: 480px) {
+
+    .tab-content .tabla-encabezado,
+    .tab-content .reserva-linea {
+        grid-template-columns: 1.2fr 100px 70px 80px 80px !important;
+        font-size: 12px;
+        padding: 10px 8px;
+        gap: 8px;
     }
 
-    .reserva-card {
-        margin: 20px auto;
+    /* Ocultar botones secundarios en móvil admin si estorban, o ajustar */
+    .tab-content .reserva-linea .secondary-btn {
+        display: none;
+    }
+
+    /* Ocultar Pista y Duración en móvil admin para reservas */
+    #tabReservas .tabla-encabezado span:nth-child(4),
+    #tabReservas .reserva-linea span:nth-child(4),
+    #tabReservas .tabla-encabezado span:nth-child(5),
+    #tabReservas .reserva-linea span:nth-child(5) {
+        display: none;
+    }
+
+    #tabReservas .tabla-encabezado,
+    #tabReservas .reserva-linea {
+        grid-template-columns: 1fr 85px 50px 40px !important;
+        gap: 5px;
     }
 }
 
-@media (max-width: 600px) {
-
-    .login-card {
-        margin: 60px auto;
+/* Responsividad General (Móvil) */
+@media (max-width: 768px) {
+    .mobile-hide {
+        display: none !important;
     }
 
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    #pistas,
-    #duraciones {
-        gap: 10px;
-    }
-
-    .pista-btn,
-    .duracion-btn {
-        font-size: 14px;
-        padding: 12px;
-    }
-
+    .tabla-encabezado,
     .reserva-linea {
-        grid-template-columns: 2fr 1fr 1fr auto;
-        font-size: 12px;
-        white-space: nowrap;
+        gap: 10px;
+        padding: 10px 12px;
     }
 
-    .reserva-linea span:nth-child(4) {
+    .reserva-linea span {
+        font-size: 13px;
+    }
+
+    /* Botón X en móvil para admin */
+    .tab-content .cancelar-btn {
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0;
+        border-radius: 50%;
+        min-width: unset;
+    }
+
+    .tab-content .cancelar-btn:after {
+        content: '✕';
+        font-size: 14px;
+        color: white;
+    }
+
+    /* Listados de Usuario - Móvil */
+    .mis-reservas-lista .lista-fila,
+    .mis-cursos-lista .lista-fila,
+    .mis-torneos-lista .lista-fila {
+        font-size: 12px;
+        padding: 8px 10px;
+        gap: 6px;
+        grid-template-columns: 72px 1fr 54px 64px !important;
+    }
+
+    .col-extra {
         display: none;
+    }
+
+    /* Ocultar Pista y Duración en móvil admin para reservas */
+    #tabReservas .tabla-encabezado span:nth-child(4),
+    #tabReservas .reserva-linea span:nth-child(4),
+    #tabReservas .tabla-encabezado span:nth-child(5),
+    #tabReservas .reserva-linea span:nth-child(5) {
+        display: none;
+    }
+
+    #tabReservas .tabla-encabezado,
+    #tabReservas .reserva-linea {
+        grid-template-columns: 1fr 85px 50px 40px !important;
+        gap: 5px;
     }
 }

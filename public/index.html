@@ -1,78 +1,138 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Club Deportivo El Tejar</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Club Deportivo El Tejar</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
-<div class="overlay"></div>
+  <div class="overlay"></div>
 
-<!-- LOGIN -->
-<div id="login" class="card login-card">
-  <img src="logo.png" class="logo">
-  <h1>Club Deportivo El Tejar</h1>
+  <!-- ================= LOGIN ================= -->
 
-  <input type="email" id="email" placeholder="Correo electrónico" autocomplete="off">
-  <input type="password" id="password" placeholder="Contraseña" autocomplete="new-password" style="display:none;">
-  <button class="primary-btn" onclick="login()">Acceder</button>
-</div>
+  <div id="login" class="card login-card">
+    <img src="logo.png" class="logo">
+    <h1>Club Deportivo El Tejar</h1>
 
-<!-- APP -->
-<div id="app" style="display:none;">
-
-<header>
-  <div>
-    <h2 id="bienvenida"></h2>
-  </div>
-  <button class="secondary-btn" onclick="logout()">Cerrar sesión</button>
-</header>
-
-<div class="card reserva-card">
-
-  <!-- FECHAS -->
-  <div class="section">
-    <h3>Selecciona fecha</h3>
-    <div id="fechas"></div>
+    <input type="email" id="email" placeholder="Correo electrónico" autocomplete="off">
+    <input type="password" id="password" placeholder="Contraseña" autocomplete="new-password" style="display:none;">
+    <button class="primary-btn" onclick="login()">Acceder</button>
   </div>
 
-  <!-- PISTAS -->
-  <div class="section">
-    <h3>Pista</h3>
-    <div id="pistas">
-      <button id="btnTenis" class="pista-btn" onclick="seleccionarPista('Tenis')">Tenis</button>
-      <button id="btnPadel" class="pista-btn" onclick="seleccionarPista('Padel')">Pádel</button>
+
+  <!-- ================= APP ================= -->
+
+  <div id="app" style="display:none;">
+
+    <!-- ===== HEADER / NAVEGACIÓN ===== -->
+
+    <header>
+      <h2 id="bienvenida"></h2>
+
+      <div class="menu-buttons">
+        <button class="menu-btn" onclick="mostrarInicio()">Inicio</button>
+        <button class="menu-btn" onclick="mostrarCursos()">Cursos</button>
+        <button class="menu-btn" onclick="mostrarTorneos()">Torneos</button>
+        <button class="menu-btn logout-btn" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </header>
+
+
+    <!-- ================= INICIO ================= -->
+
+    <div id="inicioSection">
+
+      <div class="card reserva-card">
+
+        <!-- FECHAS -->
+        <div class="section">
+          <h3>Selecciona fecha</h3>
+          <div id="fechas"></div>
+        </div>
+
+        <!-- PISTAS -->
+        <div class="section">
+          <h3>Pista</h3>
+          <div id="pistas">
+            <button id="btnTenis" class="pista-btn" onclick="seleccionarPista('Tenis')">Tenis</button>
+            <button id="btnPadel" class="pista-btn" onclick="seleccionarPista('Padel')">Pádel</button>
+          </div>
+        </div>
+
+        <!-- DURACIÓN -->
+        <div class="section">
+          <h3>Duración</h3>
+          <div id="duraciones">
+            <button class="duracion-btn seleccionado" onclick="seleccionarDuracion(60)">60 min</button>
+            <button class="duracion-btn" onclick="seleccionarDuracion(90)">90 min</button>
+          </div>
+        </div>
+
+        <!-- HORAS -->
+        <div class="section" id="horarioSection" style="display:none;">
+          <h3>Horario</h3>
+          <div id="horas"></div>
+        </div>
+
+        <button class="primary-btn" onclick="confirmarReserva()">Confirmar reserva</button>
+
+        <!-- MIS RESERVAS -->
+        <div class="mis-reservas">
+          <h3>Mis reservas activas</h3>
+          <div class="mis-reservas-lista" id="misReservas"></div>
+        </div>
+
+        <!-- MIS CURSOS -->
+        <div class="mis-cursos">
+          <h3>Mis cursos activos</h3>
+          <div class="mis-cursos-lista" id="misCursos"></div>
+        </div>
+
+        <!-- MIS TORNEOS -->
+        <div class="mis-cursos">
+          <h3>Mis torneos activos</h3>
+          <div class="mis-torneos-lista" id="misTorneos"></div>
+        </div>
+
+      </div>
+
     </div>
-  </div>
 
-  <!-- DURACIÓN -->
-  <div class="section">
-    <h3>Duración</h3>
-    <div id="duraciones">
-      <button class="duracion-btn seleccionado" onclick="seleccionarDuracion(60)">60 min</button>
-      <button class="duracion-btn" onclick="seleccionarDuracion(90)">90 min</button>
+
+    <!-- ================= CURSOS ================= -->
+
+    <div id="cursosSection" style="display:none;">
+
+      <div class="card">
+        <h3>Cursos disponibles</h3>
+        <div id="listaCursos">
+          <p>No hay cursos disponibles.</p>
+        </div>
+      </div>
+
     </div>
+
+
+    <!-- ================= CAMPEONATOS / TORNEOS ================= -->
+
+    <div id="campeonatosSection" style="display:none;">
+
+      <div class="card">
+        <h3>Torneos disponibles</h3>
+        <div id="listaTorneos">
+          <p>No hay torneos próximamente.</p>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- HORAS -->
-  <div class="section" id="horarioSection" style="display:none;">
-    <h3>Horario</h3>
-    <div id="horas"></div>
-  </div>
-
-  <button class="primary-btn" onclick="confirmarReserva()">Confirmar reserva</button>
-
-  <!-- MIS RESERVAS -->
-  <div class="mis-reservas">
-    <h3>Mis reservas activas</h3>
-    <div id="misReservas"></div>
-  </div>
-
-</div>
-</div>
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
+
 </html>
